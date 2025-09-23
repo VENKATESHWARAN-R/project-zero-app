@@ -2,10 +2,10 @@
 # Optimized for production deployment with security and performance in mind
 
 # Build stage
-FROM python:3.11-slim as builder
+FROM python:3.13-slim as builder
 
 # Build arguments
-ARG PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.13
 ARG PORT=8001
 
 # Set environment variables for build
@@ -37,7 +37,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN uv pip install -r pyproject.toml
 
 # Production stage
-FROM python:3.11-slim as production
+FROM python:3.13-slim as production
 
 # Production environment variables
 ENV PYTHONUNBUFFERED=1 \

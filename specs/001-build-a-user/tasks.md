@@ -6,7 +6,7 @@
 ## Execution Flow (main)
 ```
 1. Load plan.md from feature directory
-   ✓ Extracted: FastAPI, SQLAlchemy, bcrypt, PyJWT, SQLite, Python 3.11+
+   ✓ Extracted: FastAPI, SQLAlchemy, bcrypt, PyJWT, SQLite, Python 3.13+
 2. Load optional design documents:
    ✓ data-model.md: User entity, JWT tokens, rate limiting
    ✓ contracts/auth-api.yml: 4 endpoints + health check

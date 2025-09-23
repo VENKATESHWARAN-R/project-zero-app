@@ -250,7 +250,7 @@ project-zero-app/
 
 ### Prerequisites
 - Docker & Docker Compose
-- Python 3.11+
+- Python 3.13+
 - Node.js 18+
 - Go 1.21+ (for gateway and shipping service)
 - Git

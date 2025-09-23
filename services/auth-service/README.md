@@ -45,7 +45,7 @@ The Authentication Service provides centralized user authentication and authoriz
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.13+
 - uv (Python package manager)
 - Docker (optional, for containerization)
 
@@ -195,7 +195,7 @@ uv run pytest tests/integration/ # Integration tests
 
 ### Build Arguments
 
-- `PYTHON_VERSION`: Python version (default: 3.11)
+- `PYTHON_VERSION`: Python version (default: 3.13)
 - `PORT`: Service port (default: 8001)
 
 ### Docker Compose

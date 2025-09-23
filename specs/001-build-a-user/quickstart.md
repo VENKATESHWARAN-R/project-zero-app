@@ -5,7 +5,7 @@
 **Purpose**: Validate implementation against user stories
 
 ## Prerequisites
-- Python 3.11+
+- Python 3.13+
 - pip or poetry package manager
 - SQLite (included with Python)
 

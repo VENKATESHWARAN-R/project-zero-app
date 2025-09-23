@@ -11,7 +11,7 @@ alembic>=1.13.0
 email-validator>=2.3.0
 
 [dev]
-black>=23.11.0
+black>=23.13.0
 flake8>=6.1.0
 pre-commit>=3.6.0
 

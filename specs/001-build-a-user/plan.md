@@ -34,7 +34,7 @@
 Authentication microservice for Project Zero App e-commerce platform. Provides JWT-based authentication with login/logout, token refresh, and verification endpoints. Uses FastAPI with SQLite database, bcrypt password hashing, and in-memory token blacklist for logout functionality. Service runs on port 8001 and exposes REST API for other microservices.
 
 ## Technical Context
-**Language/Version**: Python 3.11+
+**Language/Version**: Python 3.13+
 **Primary Dependencies**: FastAPI, SQLAlchemy, bcrypt, PyJWT, python-multipart, uvicorn
 **Storage**: SQLite (local development), upgradeable to PostgreSQL
 **Testing**: pytest with FastAPI test client

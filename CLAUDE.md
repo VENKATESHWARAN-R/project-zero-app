@@ -35,7 +35,7 @@ Frontend (Next.js) ↔ API Gateway (Go) ↔ Microservices
 ## Active Technologies
 
 ### Backend Services
-- **Python 3.11+ Services**: FastAPI, SQLAlchemy, bcrypt, PyJWT, python-multipart, uvicorn, Pydantic
+- **Python 3.13+ Services**: FastAPI, SQLAlchemy, bcrypt, PyJWT, python-multipart, uvicorn, Pydantic
 - **Node.js Services**: Express.js, Sequelize, bcrypt, jsonwebtoken (planned)
 - **Go Services**: Gin framework, GORM, JWT-Go (planned for API gateway)
 
@@ -124,7 +124,7 @@ kubectl apply -f infrastructure/kubernetes/      # Deploy to K8s
 
 ## Code Style & Standards
 
-### Python 3.11+ (Active)
+### Python 3.13+ (Active)
 - **Framework**: FastAPI with async/await patterns
 - **ORM**: SQLAlchemy 2.0 with declarative models
 - **Validation**: Pydantic v2 models for request/response
