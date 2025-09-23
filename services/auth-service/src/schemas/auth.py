@@ -131,6 +131,38 @@ class HealthResponse(BaseModel):
     }
 
 
+class RegisterRequest(BaseModel):
+    """User registration request model."""
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., min_length=8, description="User password")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "newuser@example.com",
+                "password": "SecurePass123"
+            }
+        }
+    }
+
+
+class RegisterResponse(BaseModel):
+    """User registration response model."""
+    user_id: int = Field(..., description="ID of the newly created user")
+    email: str = Field(..., description="Email of the registered user")
+    message: str = Field(..., description="Registration confirmation message")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "user_id": 123,
+                "email": "newuser@example.com",
+                "message": "User registered successfully"
+            }
+        }
+    }
+
+
 class ErrorResponse(BaseModel):
     """Error response model."""
     detail: str = Field(..., description="Error message describing what went wrong")

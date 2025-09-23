@@ -12,6 +12,7 @@ from src.schemas.auth import (
     LoginRequest, LoginResponse,
     LogoutRequest, LogoutResponse,
     RefreshRequest, RefreshResponse,
+    RegisterRequest, RegisterResponse,
     VerifyResponse, ErrorResponse
 )
 from src.services.auth_service import AuthService, AuthenticationError, RateLimitError, ValidationError
@@ -80,6 +81,52 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
+        )
+
+
+@router.post("/register", response_model=RegisterResponse)
+async def register(
+    register_data: RegisterRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    User registration endpoint.
+    Creates a new user account with email and password.
+    """
+    try:
+        auth_service = AuthService(db)
+
+        # Register new user
+        user = auth_service.register_user(
+            email=register_data.email,
+            password=register_data.password
+        )
+
+        return RegisterResponse(
+            user_id=user.id,
+            email=user.email,
+            message="User registered successfully"
+        )
+
+    except ValidationError as e:
+        logger.info(f"Validation error during registration for {register_data.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e)
+        )
+
+    except AuthenticationError as e:
+        logger.info(f"Registration failed for {register_data.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
+
+    except Exception as e:
+        logger.error(f"Unexpected error during registration for {register_data.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed"
         )
 
 

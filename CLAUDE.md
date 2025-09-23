@@ -1,309 +1,266 @@
-# Project Zero App Development Guidelines
+<!--
+CLAUDE.md
+Purpose: Single, concise source of truth for AI (Claude) and humans about
+project background, active service scope, run instructions, environment, endpoints,
+dependencies, and required documentation hygiene.
+Keep focused: project + plan + background + operational contract. No sprawling guides.
+If you (Claude) modify code, you MUST update impacted service README(s) and this file if scope changes.
+-->
 
-Auto-generated from all feature plans. Last updated: 2025-09-23
+# Project Zero App – Core Background & AI Collaboration Guide
 
-## Project Overview
+Last Updated: 2025-09-23
 
-**Project Zero App** is a comprehensive e-commerce microservices application designed to demonstrate AI-powered DevOps and security tooling. This serves as a realistic demonstration environment for **Project Zero** - an AI-powered DevOps and security analysis platform.
+## 1. Project Background
 
-### Core Purpose
-- **Demonstrate Real-World IT Landscapes**: Realistic microservices with multiple technologies
-- **Security Analysis Showcase**: Generate authentic vulnerabilities for AI-powered scanning tools
-- **DevOps Tooling Demo**: Comprehensive CI/CD, infrastructure-as-code, and monitoring
-- **Multi-Technology Coverage**: Diverse programming languages and frameworks
-- **Specification-Driven Development**: Example of comprehensive documentation for AI analysis
+Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. The current focus is a hardened Authentication Service (Auth Service) providing identity and token lifecycle management for future product, order, cart, payment, and notification domains.
 
-## Architecture Overview
+Core Objectives:
 
-### Microservices Structure
-```
-Frontend (Next.js) ↔ API Gateway (Go) ↔ Microservices
-                                      ├── Auth Service (Python/FastAPI) ✅
-                                      ├── Product Catalog (Python/FastAPI) 📋
-                                      ├── Cart Service (Node.js/Express) 📋
-                                      ├── Order Service (Python/FastAPI) 📋
-                                      ├── Payment Service (Python/FastAPI) 📋
-                                      ├── User Profile (Python/FastAPI) 📋
-                                      └── Notification (Node.js/Express) 📋
-```
+- Demonstrate clean, auditable microservice patterns
+- Provide security primitives (JWT, rate limiting, password hygiene)
+- Maintain explicit, minimal architecture documentation for AI agents
+- Enforce a change discipline: code ↔ docs ↔ specs stay synchronized
 
-### Current Implementation Status
-- ✅ **Auth Service**: JWT authentication, bcrypt, rate limiting (Production Ready)
-- 🏗️ **Infrastructure**: Docker, monitoring, GCP deployment setup
-- 📋 **Planned**: Product catalog, cart, order management, payment processing
+## 2. High-Level Architecture (Current Snapshot)
 
-## Active Technologies
-
-### Backend Services
-- **Python 3.13+ Services**: FastAPI, SQLAlchemy, bcrypt, PyJWT, python-multipart, uvicorn, Pydantic
-- **Node.js Services**: Express.js, Sequelize, bcrypt, jsonwebtoken (planned)
-- **Go Services**: Gin framework, GORM, JWT-Go (planned for API gateway)
-
-### Frontend & Infrastructure
-- **Frontend**: Next.js 14+ with TypeScript, Tailwind CSS, Shadcn UI
-- **Databases**: PostgreSQL (primary), Redis (caching/sessions)
-- **Infrastructure**: Docker, Kubernetes, Terraform (GCP), Prometheus + Grafana
-- **Development**: Specification-driven development with GitHub Spec Kit
-
-## Project Structure
-
-```
-project-zero-app/
-├── .specify/                    # Spec Kit configuration
-│   ├── memory/
-│   │   └── constitution.md      # Development governance (v1.0.0)
-│   └── templates/               # Feature templates
-├── specs/                       # Feature specifications
-│   └── 001-build-a-user/       # Auth service specification
-│       ├── spec.md              # Requirements & user stories
-│       ├── plan.md              # Technical implementation plan
-│       ├── tasks.md             # Task breakdown
-│       ├── contracts/           # API specifications
-│       └── data-model.md        # Database schemas
-├── services/                    # Microservice implementations
-│   ├── auth-service/            # ✅ ACTIVE: JWT authentication service
-│   │   ├── src/                 # FastAPI application code
-│   │   │   ├── api/             # API endpoints
-│   │   │   ├── models/          # SQLAlchemy models
-│   │   │   ├── services/        # Business logic
-│   │   │   ├── schemas/         # Pydantic schemas
-│   │   │   └── utils/           # Utilities & helpers
-│   │   ├── tests/               # Comprehensive test suite
-│   │   │   ├── contract/        # API contract tests
-│   │   │   ├── integration/     # Integration tests
-│   │   │   └── unit/            # Unit tests
-│   │   ├── Dockerfile           # Multi-stage Docker build
-│   │   ├── docker-compose.yml   # Local development
-│   │   ├── requirements.txt     # Python dependencies
-│   │   └── README.md            # Service documentation
-│   ├── product-catalog-service/ # 📋 PLANNED
-│   ├── cart-service/           # 📋 PLANNED
-│   └── frontend-app/           # 📋 PLANNED
-├── infrastructure/              # Infrastructure as code
-│   ├── docker-compose/         # Local development orchestration
-│   ├── kubernetes/             # K8s manifests
-│   ├── terraform/              # GCP infrastructure
-│   └── monitoring/             # Observability stack
-└── docs/                       # Project documentation
+```text
+Frontend (Planned) ──► API Gateway (Planned, Go)
+                                                     │
+                                                     ├── Auth Service (Active, FastAPI)
+                                                     ├── Product Catalog (Planned)
+                                                     ├── Cart (Planned)
+                                                     ├── Order (Planned)
+                                                     ├── Payment (Planned)
+                                                     ├── User Profile (Planned)
+                                                     └── Notification (Planned)
 ```
 
-## Commands
+Foundational Infra (incremental): Docker, future Kubernetes (GKE), Terraform (GCP), PostgreSQL (primary RDBMS), Redis (caching/session/token blacklist), structured logging.
 
-### Development Commands
+## 3. Active Service: Auth Service
+
+Purpose: Central authority for user identity, credential validation, token issuance (access + refresh), token verification, logout / invalidation, and basic account protection (failed login throttling & lockout).
+
+Responsibilities (In-Scope Now):
+
+- Email/password authentication
+- bcrypt password hashing (12 rounds default)
+- JWT access + refresh token issuance & rotation
+- Token verification endpoint for other services
+- Rate limiting & failed login lockout logic
+- Health & readiness reporting
+
+Out of Scope (Until Explicitly Planned):
+
+- OAuth/OIDC social login
+- MFA / TOTP
+- Password reset flows
+- User profile management (beyond authentication basics)
+- Inter-service event publishing
+
+## 4. API Surface (Auth Service)
+
+Implemented:
+
+- POST `/auth/login` – Authenticate user; returns access + refresh tokens
+- POST `/auth/logout` – Invalidate a refresh token
+- POST `/auth/refresh` – Exchange refresh for new access token
+- GET  `/auth/verify` – Validate access token (used by other services)
+- GET  `/health` – Liveness & basic DB check
+- GET  `/health/ready` – Readiness probe
+
+Planned (Not Yet Exposed):
+
+- POST `/auth/register` – User self‑registration (service logic baseline exists)
+
+Response & error formats follow FastAPI / Pydantic conventions with JSON bodies and standard HTTP status codes (200 / 401 / 422 / 429 / 500). Rate limiting surfaces 429 with a retry message.
+
+## 5. Environment Variables (Auth Service)
+
+| Name | Purpose | Typical Value (Dev) | Required | Notes |
+|------|---------|---------------------|----------|-------|
+| `DATABASE_URL` | SQLAlchemy connection string | `sqlite:///./auth_service.db` | No | Use PostgreSQL in prod (`postgresql://user:pass@host:5432/db`) |
+| `JWT_SECRET_KEY` | HMAC secret for JWT signing | (generated if absent) | Recommended | Provide strong 256-bit value in prod |
+| `JWT_ALGORITHM` | Signing algorithm | `HS256` | No | Keep consistent system‑wide |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime | `15` | No | Short-lived, security boundary |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime | `30` | No | Rotation & revocation supported |
+| `BCRYPT_ROUNDS` | Password hashing cost | `12` | No | Adjust carefully; impacts latency |
+| `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
+| `PORT` | Service port | `8001` | No | Exposed internally via gateway |
+
+If adding new environment variables: (1) update this table, (2) update `services/auth-service/README.md`, (3) ensure tests reflect new configuration.
+
+## 6. Local Development (Auth Service)
+
+Prerequisites: Python 3.13+, `uv` installed, optional Docker / PostgreSQL.
+
+Quick Start:
+
 ```bash
-# Auth Service (Current Active Service)
 cd services/auth-service
-uv sync                         # Install dependencies
-uvicorn main:app --reload --port 8001  # Run development server
-pytest                         # Run tests
-ruff check .                    # Lint code
-ruff format .                   # Format code
-
-# Docker Operations
-docker-compose up -d           # Start services
-docker-compose down            # Stop services
-docker build -t auth-service . # Build image
-
-# Testing
-pytest tests/                  # All tests
-pytest tests/contract/         # Contract tests only
-pytest tests/integration/     # Integration tests only
-pytest --cov=src              # Coverage report
+uv sync                                    # install deps
+uv run uvicorn main:app --reload --port 8001
+# Visit: http://localhost:8001/docs
 ```
 
-### Project Commands
+Using SQLite (default) requires no extra setup. For PostgreSQL:
+
 ```bash
-# Specification-driven development
-uvx --from git+https://github.com/github/spec-kit.git specify  # Spec Kit CLI
-specify init --here --ai claude  # Initialize for Claude
-
-# Infrastructure
-terraform -chdir=infrastructure/terraform plan   # Plan infrastructure
-kubectl apply -f infrastructure/kubernetes/      # Deploy to K8s
+export DATABASE_URL=postgresql://authuser:pass@localhost:5432/authdb
+uv run uvicorn main:app --port 8001
 ```
 
-## Code Style & Standards
+Run Tests:
 
-### Python 3.13+ (Active)
-- **Framework**: FastAPI with async/await patterns
-- **ORM**: SQLAlchemy 2.0 with declarative models
-- **Validation**: Pydantic v2 models for request/response
-- **Testing**: pytest with async support, minimum 80% coverage
-- **Linting**: ruff for linting and formatting
-- **Security**: bcrypt for passwords, PyJWT for tokens
-- **Structure**: Layered architecture (API → Services → Models)
-
-### Node.js (Planned)
-- **Framework**: Express.js with TypeScript
-- **ORM**: Sequelize with PostgreSQL
-- **Testing**: Jest with supertest
-- **Authentication**: jsonwebtoken
-
-### Frontend (Planned)
-- **Framework**: Next.js 14+ with App Router
-- **Language**: TypeScript with strict typing
-- **Styling**: Tailwind CSS + Shadcn UI
-- **State**: React Context or Zustand
-
-## Constitutional Governance
-
-The project follows a comprehensive constitution (v1.0.0) defining:
-
-### Core Principles
-1. **Simplicity First**: Choose simplest solutions that work
-2. **Functionality Over Architecture**: Working features beat elaborate patterns
-3. **Progressive Enhancement**: Start minimal, add complexity incrementally
-4. **Demo-Focused**: Prioritize demonstrable features over production optimization
-
-### Organization Standards
-- **Service Structure**: All services under `services/{service-name}-service/`
-- **Docker Mandate**: Every service MUST include Dockerfile, docker-compose.yml
-- **Documentation**: Comprehensive READMEs with GCP deployment info
-- **Integration Docs**: Service dependencies and API contracts
-
-### Quality Requirements
-- **Testing**: 80% minimum coverage, TDD methodology
-- **Security**: JWT auth, bcrypt passwords, input validation
-- **Observability**: Structured logging, health endpoints, metrics
-- **CI/CD**: Automated testing, security scanning, deployment
-
-## Service Integration Patterns
-
-### Authentication Flow
-```
-1. User → Frontend → Auth Service (/auth/login)
-2. Auth Service → JWT tokens (access + refresh)
-3. Frontend → Other Services (with Bearer token)
-4. Other Services → Auth Service (/auth/verify) for validation
-```
-
-### Current API Endpoints (Auth Service)
-- `POST /auth/login` - User authentication
-- `POST /auth/logout` - Invalidate tokens
-- `POST /auth/refresh` - Refresh access token
-- `GET /auth/verify` - Validate token
-- `GET /health` - Health check
-- `GET /health/ready` - Readiness check
-
-## Development Workflow
-
-### Specification-Driven Development
-1. **`/specify`** - Define WHAT to build (user stories, requirements)
-2. **`/plan`** - Define HOW to build (tech stack, architecture)
-3. **`/tasks`** - Break into actionable implementation tasks
-4. **Implement** - Build according to specifications
-5. **Validate** - Test against acceptance criteria
-
-### Git Workflow
-- **Branch Naming**: `{###-feature-name}` (e.g., `001-build-a-user`)
-- **Commit Messages**: Conventional commits
-- **Testing**: All tests must pass before merge
-- **Documentation**: Update relevant READMEs and specs
-
-## Recent Changes
-- **2025-09-23**: Constitution updated to v1.0.0 (comprehensive governance)
-- **001-build-a-user**: Auth service implemented with FastAPI, JWT, bcrypt, rate limiting
-- **Infrastructure**: Docker containerization, GCP deployment setup
-
-## Security Considerations
-
-### Implemented (Auth Service)
-- JWT token authentication with refresh pattern
-- bcrypt password hashing (12 salt rounds)
-- Rate limiting on authentication endpoints
-- Input validation and sanitization
-- Account lockout mechanisms
-- Structured logging without sensitive data
-
-### Planned Security Features
-- HTTPS enforcement in production
-- Secret management with environment variables
-- Regular dependency vulnerability scanning
-- CORS and security headers
-- Distributed rate limiting across services
-
-## Monitoring & Observability
-
-### Current Implementation
-- Health check endpoints (`/health`, `/health/ready`)
-- Structured JSON logging with correlation IDs
-- Request/response logging with performance metrics
-- Error tracking and classification
-
-### Planned Infrastructure
-- Prometheus metrics collection
-- Grafana dashboards
-- ELK stack for log aggregation
-- Distributed tracing with OpenTelemetry
-- Alerting for service downtime and error rates
-
-## Testing Strategy
-
-### Current (Auth Service)
-- **Contract Tests**: API endpoint validation (94+ tests)
-- **Integration Tests**: Database and service integration
-- **Unit Tests**: Business logic validation
-- **Coverage**: 80%+ maintained
-- **TDD Approach**: Tests written before implementation
-
-### Test Commands
 ```bash
-# Run all tests
-pytest
-
-# Run specific test types
-pytest tests/contract/     # API contract tests
-pytest tests/integration/ # Service integration tests
-pytest tests/unit/        # Unit tests
-
-# Coverage reporting
-pytest --cov=src --cov-report=html
+uv run pytest            # all tests
+uv run pytest tests/contract/
+uv run pytest --cov=src --cov-report=term-missing
 ```
 
-## Deployment
+Lint & Format:
 
-### Local Development
 ```bash
-# Start dependencies
-docker-compose up -d postgres redis
+uv run ruff check .
+uv run ruff format .
+```
 
-# Start auth service
+## 7. Docker Packaging & Execution
+
+Build Image:
+
+```bash
 cd services/auth-service
-uvicorn main:app --reload --port 8001
+docker build -t auth-service:latest .
 ```
 
-### GCP Production (Planned)
-- **Infrastructure**: Terraform modules for GCP resources
-- **Container Registry**: Google Container Registry
-- **Orchestration**: Google Kubernetes Engine (GKE)
-- **Database**: Cloud SQL (PostgreSQL)
-- **Caching**: Memorystore (Redis)
-- **Monitoring**: Cloud Monitoring + Grafana
+Run Container (ephemeral SQLite):
 
-## AI Development Notes
+```bash
+docker run -p 8001:8001 \
+    -e JWT_SECRET_KEY="change-me-dev" \
+    auth-service:latest
+```
 
-### When Working on This Project
-1. **Follow the Constitution**: All changes must comply with constitutional principles
-2. **Use Specification-Driven Development**: Create/update specs before implementation
-3. **Maintain Service Independence**: Each service should be self-contained
-4. **Docker Everything**: Every service needs container support
-5. **Document Integration**: Always document how services integrate
-6. **Test First**: Write tests before implementation (TDD)
-7. **Security First**: Implement security patterns consistently
-8. **GCP Focus**: Target Google Cloud Platform for deployment
+Run with PostgreSQL:
 
-### Current Priorities
-1. **Complete Auth Service**: Address any remaining issues or enhancements
-2. **Product Catalog Service**: Next service to implement
-3. **Infrastructure Setup**: Complete monitoring and deployment automation
-4. **API Gateway**: Implement request routing and cross-cutting concerns
-5. **Frontend Application**: React/Next.js e-commerce interface
+```bash
+docker network create project-zero-net || true
+docker run -d --name auth-db --network project-zero-net \
+    -e POSTGRES_DB=authdb -e POSTGRES_USER=authuser -e POSTGRES_PASSWORD=pass \
+    postgres:15
 
-### Key Files to Reference
-- `.specify/memory/constitution.md` - Governance and standards
-- `README.md` - Project overview and architecture
-- `services/auth-service/README.md` - Example service documentation
-- `specs/001-build-a-user/` - Example specification structure
+docker run --rm -p 8001:8001 --network project-zero-net \
+    -e DATABASE_URL=postgresql://authuser:pass@auth-db:5432/authdb \
+    -e JWT_SECRET_KEY="strong-dev-secret" \
+    auth-service:latest
+```
 
-<!-- MANUAL ADDITIONS START -->
-<!-- MANUAL ADDITIONS END -->
+Health Check: `curl http://localhost:8001/health`
+
+## 8. Service Dependencies & External Interactions
+
+Current External Dependencies:
+
+- Database: SQLite (dev) / PostgreSQL (planned prod)
+- In-Memory / Cache (Planned): Redis for token blacklist / rate data
+
+Incoming Callers (Future): Product, Order, Cart, Payment, Profile services will call `GET /auth/verify` to validate tokens. API Gateway will forward auth endpoints transparently.
+
+No outbound calls to other microservices are currently implemented. When adding any new outbound integration, document: (a) target base URL / discovery mechanism, (b) request contract, (c) failure handling & timeout policy, (d) retry/backoff strategy.
+
+## 9. AI Assistant (Claude) Contribution Protocol
+
+When acting on this repository, follow Anthropic-aligned engineering collaboration principles:
+
+Golden Rules:
+
+1. Minimize Diff Surface: Change only what the requirement demands.
+2. Keep Docs Synchronized: Any code change impacting behavior, interface, configuration, or environment MUST update:
+   - `services/auth-service/README.md` (service operational detail)
+   - `CLAUDE.md` (if architectural scope or protocol changes)
+   - Relevant spec file under `specs/` (if requirement/story altered)
+3. Explicit Contracts: Before altering endpoints or env vars, restate the proposed contract (input shape, output shape, error modes) in commit message or PR description.
+4. Security Preservation: Do not weaken password hashing, token lifetimes, or secret handling without explicit rationale.
+5. Test Discipline: Add or adjust tests FIRST (or same diff) to reflect new/changed behavior.
+6. Deterministic Steps: Provide reproducible commands for new workflows.
+7. Transparency: Summarize rationale for non-trivial refactors (why + impact).
+
+Checklist Before Completing a Change:
+
+- [ ] Code compiles / lints cleanly
+- [ ] Tests added/updated & passing
+- [ ] README for affected service updated
+- [ ] `CLAUDE.md` updated if cross-cutting change
+- [ ] API and env var tables aligned
+- [ ] Security considerations re-evaluated
+
+Forbidden Without Justification: silent schema changes, secret hardcoding, removing validations, broad refactors lacking necessity.
+
+## 10. Minimal Plan Template (For New Service or Major Feature)
+
+Use this lightweight structure (avoid over‑specifying early):
+
+```text
+Title: <Concise Feature Name>
+Goal: <Business / platform outcome>
+Scope: <In / Out of scope bullets>
+Interfaces: <Endpoints + payload summary>
+Data: <New tables / fields / migrations>
+Risks: <Top 3>
+Test Strategy: <Key categories>
+Done Criteria: <Observable conditions>
+```
+
+Store detailed expansions in `specs/<feature-id>/`.
+
+## 11. Documentation Update Matrix
+
+| Change Type | Update README | Update CLAUDE.md | Update Specs | Notes |
+|-------------|---------------|------------------|--------------|-------|
+| Add/Modify Endpoint | Yes | If cross-service impact | Yes | Include request/response |
+| New Env Var | Yes | Yes | Maybe | Add to env table |
+| Security Policy Change | Yes | Yes | Yes | Justify risk/benefit |
+| Internal Refactor (no interface change) | Optional | No | No | Note in changelog if large |
+| Dependency Upgrade (security/major) | Yes | Maybe | Maybe | Capture migration notes |
+
+## 12. Future Services (Outline Only)
+
+Do not expand here until activated. Each future service will replicate documentation pattern: purpose, endpoints, env, run, dependencies.
+
+- Product Catalog: Read/search products
+- Cart: Session-based cart aggregation
+- Order: Order orchestration from cart & payment
+- Payment: Payment intent capture (mock or gateway integration)
+- User Profile: Non-auth user data (addresses, preferences)
+- Notification: Email/SMS/Webhook delivery
+
+## 13. Quick Reference Commands
+
+```bash
+# Auth service dev
+cd services/auth-service && uv sync && uv run uvicorn main:app --reload --port 8001
+
+# Tests & coverage
+uv run pytest --cov=src --cov-report=term-missing
+
+# Lint & format
+uv run ruff check . && uv run ruff format .
+
+# Docker build & run
+docker build -t auth-service:latest services/auth-service
+docker run -p 8001:8001 auth-service:latest
+
+# Health probe
+curl -s http://localhost:8001/health | jq '.'
+```
+
+## 14. Changelog (High-Level)
+
+| Date | Change |
+|------|--------|
+| 2025-09-23 | Initial condensed CLAUDE.md authored; established AI protocol |
+
+---
+Maintain this file as a compact operational contract. If it becomes bloated, refactor detail into service-specific READMEs or specs and relink.
