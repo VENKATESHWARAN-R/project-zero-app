@@ -1,50 +1,42 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Project Zero App Constitution
 
-## Core Principles
+## Core Philosophy
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+- **Simplicity First**: Choose the simplest solution that works
+- **Functionality Over Complexity**: Working features beat elaborate architectures
+- **Progressive Enhancement**: Start minimal, add complexity only when needed
+- **Demo-Focused**: Prioritize demonstrable features over production-scale optimizations
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+## Development Standards
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- **Backend Simplicity**: Use FastAPI with minimal dependencies
+- **One Responsibility**: Each service does exactly one thing well
+- **Stateless Services**: Services should be stateless and independently deployable
+- **Rich Frontend**: UI can be visually appealing while keeping logic simple
+- **Mock External Dependencies**: Payment gateways, email services, etc. should be mocked
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+## Security
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- Include common security patterns
+- All services must implement basic authentication/authorization
+- Secrets management
+- Input validation
+- Dependencies with known vulnerabilities for scanning demos
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Observability (Simple but Functional)
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Basic structured logging (JSON format)
+- Simple health checks (/health endpoint)
+- Basic metrics (request count, response time...)
+- Avoid complex monitoring setup initially
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Technology Constraints
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **Frontend**: Next.js with TypeScript + Tailwind CSS + Shadcn UI
+- **Python Services**: FastAPI + SQLAlchemy + Pydantic
+- **Node.js Services**: Express.js (for 1-2 simple services)
+- **Databases**: PostgreSQL primary, Redis for caching
+- **Container**: Docker for all services
+- **Local Development**: Docker Compose
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
-
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 0.0.1 | **Ratified**: 2025-09-23 | **Last Amended**: 2025-09-23

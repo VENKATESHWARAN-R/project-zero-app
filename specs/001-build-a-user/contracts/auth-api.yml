@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: Project Zero App - Authentication Service
+  description: JWT-based authentication microservice for e-commerce platform
+  version: 1.0.0
+  contact:
+    name: Project Zero App Team
+
+servers:
+  - url: http://localhost:8001
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "SecurePass123"
+
+    LoginResponse:
+      type: object
+      required:
+        - access_token
+        - refresh_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token for API authentication
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          description: JWT refresh token for obtaining new access tokens
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          enum: ["bearer"]
+          example: "bearer"
+        expires_in:
+          type: integer
+          description: Access token expiration time in seconds
+          example: 900
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Valid refresh token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    RefreshResponse:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: New JWT access token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          enum: ["bearer"]
+          example: "bearer"
+        expires_in:
+          type: integer
+          description: Access token expiration time in seconds
+          example: 900
+
+    LogoutRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh token to invalidate
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    LogoutResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: "Successfully logged out"
+
+    VerifyResponse:
+      type: object
+      required:
+        - valid
+        - user_id
+      properties:
+        valid:
+          type: boolean
+          description: Whether the token is valid
+          example: true
+        user_id:
+          type: integer
+          description: ID of the authenticated user
+          example: 123
+        email:
+          type: string
+          format: email
+          description: Email of the authenticated user
+          example: "user@example.com"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "unhealthy"]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-23T10:30:00Z"
+        database:
+          type: string
+          enum: ["connected", "disconnected"]
+          example: "connected"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error message describing what went wrong
+          example: "Invalid email or password"
+        error_code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_CREDENTIALS"
+
+paths:
+  /auth/login:
+    post:
+      summary: User Authentication
+      description: Authenticate user with email and password, receive JWT tokens
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Invalid email or password"
+                error_code: "INVALID_CREDENTIALS"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Email format is invalid"
+                error_code: "VALIDATION_ERROR"
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Too many login attempts. Try again in 15 minutes."
+                error_code: "RATE_LIMITED"
+
+  /auth/logout:
+    post:
+      summary: User Logout
+      description: Invalidate refresh token and logout user
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '400':
+          description: Invalid or missing refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Invalid refresh token"
+                error_code: "INVALID_TOKEN"
+
+  /auth/refresh:
+    post:
+      summary: Refresh Access Token
+      description: Get new access token using valid refresh token
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refresh successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Refresh token has expired"
+                error_code: "EXPIRED_TOKEN"
+
+  /auth/verify:
+    get:
+      summary: Verify Token
+      description: Validate JWT token and return user information
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResponse'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Token has expired"
+                error_code: "EXPIRED_TOKEN"
+
+  /health:
+    get:
+      summary: Health Check
+      description: Check service health status
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "unhealthy"
+                timestamp: "2025-09-23T10:30:00Z"
+                database: "disconnected"
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Health
+    description: Service health monitoring
