@@ -363,3 +363,11 @@ auth_service.db
 htmlcov/
 .env
 .vscode/
+
+
+# DB files
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
