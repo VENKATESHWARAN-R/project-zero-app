@@ -1,0 +1,559 @@
+openapi: 3.0.3
+info:
+  title: Product Catalog Service API
+  description: |
+    Product catalog service for Project Zero App e-commerce platform.
+    Provides endpoints for browsing, searching, and managing products.
+
+    ## Authentication
+    - Public endpoints (GET operations) require no authentication
+    - Admin endpoints (POST, PUT operations) require JWT authentication via Auth Service
+
+    ## Pagination
+    List endpoints support pagination via `offset` and `limit` query parameters.
+  version: 1.0.0
+  contact:
+    name: Project Zero App
+servers:
+  - url: http://localhost:8004
+    description: Local development server
+  - url: https://api.projectzero.example.com
+    description: Production server
+
+paths:
+  /products:
+    get:
+      summary: List products with pagination
+      description: Retrieve paginated list of active products
+      tags:
+        - Products
+      parameters:
+        - name: offset
+          in: query
+          description: Number of products to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of products to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Successful response with product list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '400':
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create new product (Admin)
+      description: Create a new product in the catalog
+      tags:
+        - Products
+        - Admin
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      description: Retrieve detailed information about a specific product
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update product (Admin)
+      description: Update an existing product
+      tags:
+        - Products
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /products/category/{category}:
+    get:
+      summary: Filter products by category
+      description: Retrieve products filtered by category with pagination
+      tags:
+        - Products
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Product category
+          schema:
+            $ref: '#/components/schemas/CategoryEnum'
+        - name: offset
+          in: query
+          description: Number of products to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of products to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Successful response with filtered products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '400':
+          description: Invalid category or pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/search:
+    get:
+      summary: Search products
+      description: Search products by name or description with pagination
+      tags:
+        - Products
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (searches name and description)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: offset
+          in: query
+          description: Number of products to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of products to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Successful search response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '400':
+          description: Invalid search query or pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: Health check
+      description: Basic health check endpoint
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      summary: Readiness check
+      description: Readiness check including database connectivity
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Auth Service
+
+  schemas:
+    CategoryEnum:
+      type: string
+      enum:
+        - electronics
+        - clothing
+        - books
+        - home_goods
+      description: Product category values
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique product identifier
+          example: 1
+        name:
+          type: string
+          description: Product name
+          example: "Wireless Bluetooth Headphones"
+        description:
+          type: string
+          description: Detailed product description
+          example: "High-quality wireless headphones with noise cancellation"
+        price:
+          type: number
+          format: decimal
+          description: Product price
+          example: 199.99
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        image_url:
+          type: string
+          format: uri
+          description: URL to product image
+          example: "https://example.com/images/headphones.jpg"
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: Available stock quantity
+          example: 25
+        is_active:
+          type: boolean
+          description: Whether product is active/visible
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Product creation timestamp
+          example: "2025-09-23T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2025-09-23T10:30:00Z"
+      required:
+        - id
+        - name
+        - description
+        - price
+        - category
+        - image_url
+        - stock_quantity
+        - is_active
+        - created_at
+        - updated_at
+
+    ProductCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Product name
+          example: "Wireless Bluetooth Headphones"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: Detailed product description
+          example: "High-quality wireless headphones with noise cancellation"
+        price:
+          type: number
+          format: decimal
+          minimum: 0.01
+          description: Product price
+          example: 199.99
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        image_url:
+          type: string
+          format: uri
+          description: URL to product image
+          example: "https://example.com/images/headphones.jpg"
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: Initial stock quantity
+          example: 25
+      required:
+        - name
+        - description
+        - price
+        - category
+        - image_url
+        - stock_quantity
+
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Product name
+          example: "Wireless Bluetooth Headphones"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: Detailed product description
+          example: "High-quality wireless headphones with noise cancellation"
+        price:
+          type: number
+          format: decimal
+          minimum: 0.01
+          description: Product price
+          example: 199.99
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        image_url:
+          type: string
+          format: uri
+          description: URL to product image
+          example: "https://example.com/images/headphones.jpg"
+        stock_quantity:
+          type: integer
+          minimum: 0
+          description: Stock quantity
+          example: 25
+        is_active:
+          type: boolean
+          description: Whether product is active/visible
+          example: true
+      description: All fields are optional for partial updates
+
+    ProductListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+          description: List of products
+        total:
+          type: integer
+          description: Total number of products matching criteria
+          example: 150
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+        limit:
+          type: integer
+          description: Maximum items in response
+          example: 20
+        has_more:
+          type: boolean
+          description: Whether more items are available
+          example: true
+      required:
+        - items
+        - total
+        - offset
+        - limit
+        - has_more
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+          example: "Product not found"
+        type:
+          type: string
+          description: Error type
+          example: "not_found"
+      required:
+        - detail
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: General validation error message
+          example: "Validation failed"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                description: Field location
+                example: ["name"]
+              msg:
+                type: string
+                description: Error message
+                example: "Field required"
+              type:
+                type: string
+                description: Error type
+                example: "missing"
+          description: Detailed validation errors
+      required:
+        - detail
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, ready]
+          description: Health status
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          description: Check timestamp
+          example: "2025-09-23T10:30:00Z"
+        database:
+          type: string
+          enum: [connected, disconnected]
+          description: Database connection status (ready check only)
+          example: "connected"
+      required:
+        - status
+        - timestamp
+
+tags:
+  - name: Products
+    description: Product catalog operations
+  - name: Admin
+    description: Administrative operations (require authentication)
+  - name: Health
+    description: Health and readiness checks
