@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: Shopping Cart Service API
+  description: REST API for managing user shopping carts in Project Zero App
+  version: 1.0.0
+  contact:
+    name: Project Zero Team
+servers:
+  - url: http://localhost:8007
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns service health status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    example: "connected"
+
+  /health/ready:
+    get:
+      summary: Readiness check endpoint
+      description: Returns service readiness status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ready"
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        type: boolean
+                      auth_service:
+                        type: boolean
+                      product_service:
+                        type: boolean
+
+  /cart/add:
+    post:
+      summary: Add item to cart
+      description: Add a product to the user's cart with specified quantity
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - quantity
+              properties:
+                product_id:
+                  type: string
+                  description: Product identifier from catalog service
+                  example: "prod-123"
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  description: Quantity to add
+                  example: 2
+      responses:
+        '200':
+          description: Item added/updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Quantity exceeds limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cart:
+    get:
+      summary: Get cart contents
+      description: Retrieve user's cart with product details and totals
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart contents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cart not found or empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyCartResponse'
+    delete:
+      summary: Clear entire cart
+      description: Remove all items from user's cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cart cleared successfully"
+                  cart_id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cart/items/{product_id}:
+    put:
+      summary: Update item quantity
+      description: Update quantity of specific item in user's cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product identifier
+          example: "prod-123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quantity
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  description: New quantity for the item
+                  example: 3
+      responses:
+        '200':
+          description: Item quantity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Invalid quantity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found in cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Quantity exceeds limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Remove item from cart
+      description: Remove specific item from user's cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product identifier
+          example: "prod-123"
+      responses:
+        '200':
+          description: Item removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found in cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from auth service
+
+  schemas:
+    CartResponse:
+      type: object
+      properties:
+        cart_id:
+          type: string
+          format: uuid
+          description: Unique cart identifier
+        user_id:
+          type: string
+          description: User identifier
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totals:
+          $ref: '#/components/schemas/CartTotals'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CartItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+          description: Product identifier
+        quantity:
+          type: integer
+          minimum: 1
+          description: Item quantity
+        product:
+          $ref: '#/components/schemas/ProductInfo'
+        subtotal:
+          type: number
+          format: decimal
+          description: Quantity × unit price
+        added_at:
+          type: string
+          format: date-time
+
+    ProductInfo:
+      type: object
+      description: Product details from catalog service
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        description:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        availability:
+          type: boolean
+
+    CartTotals:
+      type: object
+      properties:
+        item_count:
+          type: integer
+          description: Total number of items
+          example: 3
+        total_price:
+          type: number
+          format: decimal
+          description: Sum of all item subtotals
+          example: 99.97
+        currency:
+          type: string
+          example: "USD"
+
+    EmptyCartResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Cart is empty"
+        cart_id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items: {}
+          example: []
+        totals:
+          type: object
+          properties:
+            item_count:
+              type: integer
+              example: 0
+            total_price:
+              type: number
+              example: 0.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+        timestamp:
+          type: string
+          format: date-time
+        correlation_id:
+          type: string
+          description: Request correlation ID for tracing
+
+tags:
+  - name: Health
+    description: Service health and readiness endpoints
+  - name: Cart
+    description: Shopping cart operations
