@@ -50,7 +50,7 @@ export function useNetworkStatus(): NetworkStatus {
         const isSlowConnection =
           connection.effectiveType === '2g' ||
           connection.effectiveType === 'slow-2g' ||
-          (connection.downlink && connection.downlink < 1.5)
+          (!!connection.downlink && connection.downlink < 1.5)
 
         setNetworkStatus(prev => ({
           ...prev,

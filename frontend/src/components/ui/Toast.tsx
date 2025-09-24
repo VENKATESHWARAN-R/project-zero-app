@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -292,7 +292,11 @@ export const promiseToast = {
     success: string;
     error: string;
   }) => {
-    const loadingId = toast.info(messages.loading, { duration: 0 });
+    const loadingId = toast.toast({
+      type: 'info',
+      message: messages.loading,
+      duration: 0
+    });
 
     return promise
       .then((result) => {

@@ -208,7 +208,7 @@ export default function ProductDetailPage() {
                 {Object.entries(product.specifications).map(([key, value]) => (
                   <div key={key} className="flex justify-between border-b border-gray-100 pb-1">
                     <dt className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</dt>
-                    <dd className="text-gray-900 font-medium">{value}</dd>
+                    <dd className="text-gray-900 font-medium">{typeof value === 'string' || typeof value === 'number' ? value : String(value)}</dd>
                   </div>
                 ))}
               </dl>

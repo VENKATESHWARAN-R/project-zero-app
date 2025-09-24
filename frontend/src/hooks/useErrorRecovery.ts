@@ -30,7 +30,7 @@ export function useErrorRecovery<T extends (...args: unknown[]) => Promise<unkno
 ) {
   const { isOnline } = useNetworkStatus()
   const fullConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const [state, setState] = useState<ErrorRecoveryState>({
     retryCount: 0,
@@ -52,28 +52,32 @@ export function useErrorRecovery<T extends (...args: unknown[]) => Promise<unkno
     // Network errors
     if (!isOnline) return true
 
-    // HTTP status codes that are retryable
-    if (error.status) {
-      return error.status >= 500 ||
-             error.status === 429 ||
-             error.status === 408 ||
-             error.status === 0
-    }
+    // Type guard for error object
+    if (typeof error === 'object' && error !== null) {
+      // HTTP status codes that are retryable
+      if ('status' in error && typeof error.status === 'number') {
+        return error.status >= 500 ||
+               error.status === 429 ||
+               error.status === 408 ||
+               error.status === 0
+      }
 
-    // Network-related error messages
-    if (error.message) {
-      const networkErrors = [
-        'network error',
-        'fetch error',
-        'connection failed',
-        'timeout',
-        'aborted',
-        'dns',
-        'unreachable'
-      ]
-      return networkErrors.some(keyword =>
-        error.message.toLowerCase().includes(keyword)
-      )
+      // Network-related error messages
+      if ('message' in error && typeof error.message === 'string') {
+        const errorMessage = error.message;
+        const networkErrors = [
+          'network error',
+          'fetch error',
+          'connection failed',
+          'timeout',
+          'aborted',
+          'dns',
+          'unreachable'
+        ]
+        return networkErrors.some(keyword =>
+          errorMessage.toLowerCase().includes(keyword)
+        )
+      }
     }
 
     return false
@@ -90,7 +94,7 @@ export function useErrorRecovery<T extends (...args: unknown[]) => Promise<unkno
           retryCount: attemptNumber,
         }))
 
-        const result = await asyncFn(...args)
+        const result = await asyncFn(...args) as Awaited<ReturnType<T>>
 
         // Success - reset state
         setState({
@@ -119,7 +123,7 @@ export function useErrorRecovery<T extends (...args: unknown[]) => Promise<unkno
         if (shouldRetry) {
           const delay = calculateDelay(attemptNumber)
 
-          return new Promise((resolve, reject) => {
+          return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
             timeoutRef.current = setTimeout(async () => {
               try {
                 const result = await execute(attemptNumber + 1)

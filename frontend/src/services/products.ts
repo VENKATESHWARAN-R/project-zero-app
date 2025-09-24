@@ -97,16 +97,39 @@ export class ProductsService {
       return persistentData;
     }
 
+    type ApiCategoriesResponse = {
+      categories: {
+        id: string;
+        name: string;
+        slug: string;
+        description: string;
+        parent_id: string | null;
+        product_count: number;
+      }[];
+    };
+
     const response = await handleApiCall(
-      () => productsApi.get<CategoriesResponse>('/categories'),
+      () => productsApi.get<ApiCategoriesResponse>('/categories'),
       'get categories'
     );
 
-    // Cache the response
-    productCache.set(cacheKey, response, cacheTTL.categories);
-    persistentCache.set(cacheKey, response, cacheTTL.categories);
+    // Transform API response to match frontend interface
+    const transformedResponse: CategoriesResponse = {
+      categories: response.categories.map(apiCategory => ({
+        id: apiCategory.id,
+        name: apiCategory.name,
+        slug: apiCategory.slug,
+        description: apiCategory.description,
+        parent_id: apiCategory.parent_id,
+        product_count: apiCategory.product_count,
+      })),
+    };
 
-    return response;
+    // Cache the response
+    productCache.set(cacheKey, transformedResponse, cacheTTL.categories);
+    persistentCache.set(cacheKey, transformedResponse, cacheTTL.categories);
+
+    return transformedResponse;
   }
 
   /**
@@ -310,10 +333,10 @@ export class ProductsService {
       currency: apiProduct.currency,
       category: apiProduct.category,
       imageUrl: apiProduct.image_url,
-      images: apiProduct.images || [apiProduct.image_url],
+      images: 'images' in apiProduct ? apiProduct.images || [apiProduct.image_url] : [apiProduct.image_url],
       inStock: apiProduct.in_stock,
       stockQuantity: apiProduct.stock_quantity,
-      specifications: apiProduct.specifications || {},
+      specifications: 'specifications' in apiProduct ? apiProduct.specifications || {} : {},
       createdAt: apiProduct.created_at,
       updatedAt: apiProduct.updated_at,
     };

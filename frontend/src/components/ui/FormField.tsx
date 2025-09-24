@@ -127,7 +127,6 @@ export function FormField({
           <div
             id={`${fieldId}-error`}
             className="text-sm text-red-600 flex items-start animate-fade-in-up"
-            role="alert"
           >
             <AlertCircle className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" />
             <span>{error}</span>

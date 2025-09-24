@@ -104,7 +104,7 @@ export const useProductsStore = create<ProductState>()(
 
         const response = await ProductsService.getProducts(updatedFilters);
 
-        // Transform products if needed
+        // response.products are in API format, need to transform to frontend format
         const transformedProducts = response.products.map(product =>
           ProductsService.transformProductFromApi(product)
         );
@@ -151,8 +151,18 @@ export const useProductsStore = create<ProductState>()(
       try {
         const response = await ProductsService.getCategories();
 
+        // Transform categories from API response to frontend interface
+        const transformedCategories = response.categories.map(apiCategory => ({
+          id: apiCategory.id,
+          name: apiCategory.name,
+          slug: apiCategory.slug,
+          description: apiCategory.description,
+          parentId: apiCategory.parent_id,
+          productCount: apiCategory.product_count,
+        }));
+
         set({
-          categories: response.categories,
+          categories: transformedCategories,
           error: null,
         });
 
@@ -180,13 +190,9 @@ export const useProductsStore = create<ProductState>()(
 
         const response = await ProductsService.searchProducts(query, searchFilters);
 
-        // Transform products if needed
-        const transformedProducts = response.products.map(product =>
-          ProductsService.transformProductFromApi(product)
-        );
-
+        // response.products are in frontend format (Product[]), no transformation needed
         set({
-          products: transformedProducts,
+          products: response.products,
           pagination: response.pagination,
           isLoading: false,
           error: null,

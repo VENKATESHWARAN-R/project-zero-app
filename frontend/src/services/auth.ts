@@ -79,16 +79,16 @@ export class AuthService {
     email: string;
     first_name: string;
     last_name: string;
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
   }): User {
     return {
       id: apiUser.id,
       email: apiUser.email,
       firstName: apiUser.first_name,
       lastName: apiUser.last_name,
-      createdAt: apiUser.created_at,
-      updatedAt: apiUser.updated_at,
+      createdAt: apiUser.created_at || new Date().toISOString(),
+      updatedAt: apiUser.updated_at || new Date().toISOString(),
     };
   }
 
