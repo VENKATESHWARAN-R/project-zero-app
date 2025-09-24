@@ -3,34 +3,34 @@
 **Feature Branch**: `004-build-a-next`
 **Created**: 2025-09-23
 **Status**: Draft
-**Input**: User description: "Build a Next.js frontend application for the Project Zero App e-commerce platform. This application provides a modern, responsive web interface for customers to browse products, manage their shopping cart, and handle user authentication. The app should include pages for product listing with search and filtering, individual product details, shopping cart management, user login and registration, and user profile. The interface should be clean, functional, and mobile-responsive using modern UX patterns. Include features like product browsing with category filtering, search functionality, add to cart buttons, cart page with quantity updates, user authentication flows, and basic user profile management. The frontend should communicate with our three backend services: auth service (port 8001), product catalog service (port 8002), and cart service (port 8007). Use TypeScript for type safety and implement proper state management for user authentication and cart data. Focus on core e-commerce user flows and keep the design simple but professional and modern. The application should include these specific pages and features: Home page with featured products, Products page with search and category filtering, Product detail page with add to cart functionality, Cart page with quantity management and checkout preparation, Login/Register pages with form validation, User profile page with basic account management. Include proper error handling, loading states, and responsive design. The app should handle authentication state globally and protect cart-related actions for authenticated users only."
+**Input**: User description: "Build a Next.js frontend application for the Project Zero App e-commerce platform. This application provides a modern, responsive web interface for customers to browse products, manage their shopping cart, and handle user authentication. The app should include pages for product listing with search and filtering, individual product details, shopping cart management, user login and registration, and user profile. The interface should be clean, functional, and mobile-responsive using modern UX patterns. Include features like product browsing with category filtering, search functionality, add to cart buttons, cart page with quantity updates, user authentication flows, and basic user profile management. The frontend should communicate with our three backend services: auth service (port 8001), product catalog service (port 8004), and cart service (port 8007). Use TypeScript for type safety and implement proper state management for user authentication and cart data. Focus on core e-commerce user flows and keep the design simple but professional and modern. The application should include these specific pages and features: Home page with featured products, Products page with search and category filtering, Product detail page with add to cart functionality, Cart page with quantity management and checkout preparation, Login/Register pages with form validation, User profile page with basic account management. Include proper error handling, loading states, and responsive design. The app should handle authentication state globally and protect cart-related actions for authenticated users only."
 
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   ’ Extract e-commerce frontend requirements with authentication and cart functionality
+   ï¿½ Extract e-commerce frontend requirements with authentication and cart functionality
 2. Extract key concepts from description
-   ’ Actors: customers, guest users, authenticated users
-   ’ Actions: browse, search, filter, add to cart, authenticate, manage profile
-   ’ Data: products, cart items, user accounts
-   ’ Constraints: mobile-responsive, professional design, authentication-protected actions
+   ï¿½ Actors: customers, guest users, authenticated users
+   ï¿½ Actions: browse, search, filter, add to cart, authenticate, manage profile
+   ï¿½ Data: products, cart items, user accounts
+   ï¿½ Constraints: mobile-responsive, professional design, authentication-protected actions
 3. For each unclear aspect:
-   ’ [NEEDS CLARIFICATION: Payment flow details not specified]
-   ’ [NEEDS CLARIFICATION: Product inventory management not specified]
-   ’ [NEEDS CLARIFICATION: User registration approval process not specified]
+   ï¿½ [NEEDS CLARIFICATION: Payment flow details not specified]
+   ï¿½ [NEEDS CLARIFICATION: Product inventory management not specified]
+   ï¿½ [NEEDS CLARIFICATION: User registration approval process not specified]
 4. Fill User Scenarios & Testing section
-   ’ Primary flow: guest browsing ’ registration/login ’ cart management ’ checkout preparation
+   ï¿½ Primary flow: guest browsing ï¿½ registration/login ï¿½ cart management ï¿½ checkout preparation
 5. Generate Functional Requirements
-   ’ Each requirement focused on user capabilities and system behaviors
+   ï¿½ Each requirement focused on user capabilities and system behaviors
 6. Identify Key Entities (products, users, cart items, user sessions)
 7. Run Review Checklist
-   ’ Mark ambiguous requirements for clarification
+   ï¿½ Mark ambiguous requirements for clarification
 8. Return: SUCCESS (spec ready for planning)
 ```
 
 ---
 
-## ¡ Quick Guidelines
+## ï¿½ Quick Guidelines
 -  Focus on WHAT users need and WHY
 - L Avoid HOW to implement (no tech stack, APIs, code structure)
 - =e Written for business stakeholders, not developers
