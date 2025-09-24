@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import { useNetworkStatus } from './useNetworkStatus'
 
 export interface RetryConfig {
@@ -24,12 +24,12 @@ const DEFAULT_CONFIG: RetryConfig = {
   backoffFactor: 2,
 }
 
-export function useErrorRecovery<T extends (...args: any[]) => Promise<any>>(
+export function useErrorRecovery<T extends (...args: unknown[]) => Promise<unknown>>(
   asyncFn: T,
   config: Partial<RetryConfig> = {}
 ) {
   const { isOnline } = useNetworkStatus()
-  const fullConfig = { ...DEFAULT_CONFIG, ...config }
+  const fullConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
   const timeoutRef = useRef<NodeJS.Timeout>()
 
   const [state, setState] = useState<ErrorRecoveryState>({
@@ -48,7 +48,7 @@ export function useErrorRecovery<T extends (...args: any[]) => Promise<any>>(
     return delay + Math.random() * 1000
   }, [fullConfig])
 
-  const isRetryableError = useCallback((error: any): boolean => {
+  const isRetryableError = useCallback((error: unknown): boolean => {
     // Network errors
     if (!isOnline) return true
 

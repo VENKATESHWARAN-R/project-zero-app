@@ -23,7 +23,7 @@ import { useAuthStore } from '@/store/auth';
 import { useCartSelectors } from '@/store/cart';
 import { SearchInput } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
+
 import { ROUTES } from '@/lib/constants';
 
 export function Header() {

@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/auth'
 import Loading from '@/components/ui/Loading'
 import { ProductCard } from '@/components/product/ProductCard'
 import { formatPrice } from '@/lib/utils'
+import { Product } from '@/types/product'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -22,7 +23,7 @@ export default function ProductDetailPage() {
 
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [addedToCart, setAddedToCart] = useState(false)
 
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function ProductDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold text-gray-700 mb-4">Product Not Found</h1>
-        <p className="text-gray-600 mb-4">The product you're looking for doesn't exist.</p>
+        <p className="text-gray-600 mb-4">The product you&apos;re looking for doesn&apos;t exist.</p>
         <Link
           href="/products"
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"

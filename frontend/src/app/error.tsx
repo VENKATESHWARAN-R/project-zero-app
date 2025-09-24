@@ -30,7 +30,7 @@ export default function ErrorPage({
         {/* Error Message */}
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Something went wrong!</h1>
         <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto">
-          We encountered an unexpected error. Don't worry, our team has been notified.
+          We encountered an unexpected error. Don&apos;t worry, our team has been notified.
         </p>
 
         {/* Error Details (Development Only) */}

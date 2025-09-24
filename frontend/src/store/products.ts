@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { Product, ProductFilters, Category, ProductsResponse } from '@/types/product';
+import { Product, ProductFilters, Category } from '@/types/product';
 import { ProductsService } from '@/services/products';
 
 interface ProductState {

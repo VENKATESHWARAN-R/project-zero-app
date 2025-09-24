@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react'
 
+// Define NetworkInformation interface to properly type navigator.connection
+interface NetworkInformation {
+  effectiveType: string;
+  downlink: number;
+  rtt: number;
+  saveData: boolean;
+  addEventListener: (type: string, listener: EventListener) => void;
+  removeEventListener: (type: string, listener: EventListener) => void;
+}
+
 export interface NetworkStatus {
   isOnline: boolean
   isSlowConnection: boolean
@@ -24,9 +34,17 @@ export function useNetworkStatus(): NetworkStatus {
     }
 
     const updateNetworkInfo = () => {
-      const connection = (navigator as any).connection ||
-                        (navigator as any).mozConnection ||
-                        (navigator as any).webkitConnection
+      // Type assertion for Network Information API (non-standard, experimental)
+      const nav = navigator as Navigator & {
+        connection?: NetworkInformation;
+        mozConnection?: NetworkInformation;
+        webkitConnection?: NetworkInformation;
+      };
+      
+      const connection = 
+        nav.connection ||
+        nav.mozConnection || 
+        nav.webkitConnection;
 
       if (connection) {
         const isSlowConnection =
@@ -47,9 +65,16 @@ export function useNetworkStatus(): NetworkStatus {
     window.addEventListener('offline', updateOnlineStatus)
 
     // Listen for connection changes if supported
-    const connection = (navigator as any).connection ||
-                      (navigator as any).mozConnection ||
-                      (navigator as any).webkitConnection
+    const nav = navigator as Navigator & {
+      connection?: NetworkInformation;
+      mozConnection?: NetworkInformation;
+      webkitConnection?: NetworkInformation;
+    };
+    
+    const connection = 
+      nav.connection ||
+      nav.mozConnection ||
+      nav.webkitConnection;
 
     if (connection) {
       connection.addEventListener('change', updateNetworkInfo)

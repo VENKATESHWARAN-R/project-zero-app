@@ -123,7 +123,7 @@ export function Footer() {
 
       success('Thank you for subscribing to our newsletter!');
       setEmail('');
-    } catch (err) {
+    } catch {
       error('Failed to subscribe. Please try again.');
     } finally {
       setIsSubscribing(false);

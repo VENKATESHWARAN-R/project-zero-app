@@ -117,7 +117,7 @@ export default function CartPage() {
               </div>
 
               <div className="divide-y divide-gray-200">
-                {cart.items.map((item, index) => (
+                {cart.items.map((item) => (
                   <div key={item.id} className="p-6">
                     <CartItem item={item} />
                   </div>

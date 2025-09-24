@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -168,13 +168,13 @@ export function ImageGallery({ images, alt, className }: ImageGalleryProps) {
   const currentImage = images[currentIndex];
   const hasMultipleImages = images.length > 1;
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-  };
+  }, [images.length]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setCurrentIndex(prev => (prev + 1) % images.length);
-  };
+  }, [images.length]);
 
   const handleThumbnailClick = (index: number) => {
     setCurrentIndex(index);
@@ -219,7 +219,7 @@ export function ImageGallery({ images, alt, className }: ImageGalleryProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showZoom]);
+  }, [showZoom, handlePrevious, handleNext]);
 
   if (!images.length) {
     return (

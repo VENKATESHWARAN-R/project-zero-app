@@ -64,7 +64,7 @@ export default function RegisterPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Your Privacy Matters</h3>
           <div className="space-y-3 text-sm text-gray-600">
             <p>
-              We're committed to protecting your privacy. Your personal information is:
+              We&apos;re committed to protecting your privacy. Your personal information is:
             </p>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li>Securely encrypted and stored</li>

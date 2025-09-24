@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { Cart, CartItem, CartSummary } from '@/types/cart';
+import { Cart, CartItem } from '@/types/cart';
 import { CartService } from '@/services/cart';
 import { useAuthStore } from './auth';
 
@@ -99,7 +99,7 @@ export const useCartStore = create<CartState>()(
       set({ error: null });
 
       try {
-        const response = await CartService.addToCart(productId, quantity);
+        await CartService.addToCart(productId, quantity);
 
         // Reload cart to get updated totals
         await get().loadCart();

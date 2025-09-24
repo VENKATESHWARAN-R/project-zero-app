@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Category, ProductFilters as FilterType } from '@/types/product';
 import { Button } from '@/components/ui/Button';
-import { formatCurrency } from '@/lib/utils';
 
 interface ProductFiltersProps {
   filters: FilterType;
@@ -52,11 +51,11 @@ export function ProductFilters({
     const [field, order] = sort.split('_');
     const updatedFilters = {
       ...localFilters,
-      sort: field as any,
+      sort: field as 'name' | 'price' | 'created_at',
       order: order as 'asc' | 'desc'
     };
     setLocalFilters(updatedFilters);
-    onFiltersChange({ sort: field as any, order: order as 'asc' | 'desc' });
+    onFiltersChange({ sort: field as 'name' | 'price' | 'created_at', order: order as 'asc' | 'desc' });
   };
 
   const handlePriceRangeChange = () => {

@@ -36,6 +36,17 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  const removeToastRef = useRef<(id: string) => void>(() => {});
+  
+  const removeToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+  
+  // Update the ref whenever removeToast changes
+  useEffect(() => {
+    removeToastRef.current = removeToast;
+  }, [removeToast]);
+
   const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const newToast: Toast = {
@@ -49,15 +60,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     // Auto remove toast after duration
     if (newToast.duration && newToast.duration > 0) {
       setTimeout(() => {
-        removeToast(id);
+        removeToastRef.current(id);
       }, newToast.duration);
     }
 
     return id;
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
   const removeAllToasts = useCallback(() => {
@@ -267,15 +274,24 @@ export const createToast = {
   }),
 };
 
+// Toast API type for external usage
+interface ToastAPI {
+  toast: (toast: Omit<Toast, 'id'>) => string;
+  dismiss: (id: string) => void;
+  dismissAll: () => void;
+  success: (message: string, options?: Partial<Omit<Toast, 'id' | 'type' | 'message'>>) => void;
+  error: (message: string, options?: Partial<Omit<Toast, 'id' | 'type' | 'message'>>) => void;
+  warning: (message: string, options?: Partial<Omit<Toast, 'id' | 'type' | 'message'>>) => void;
+  info: (message: string, options?: Partial<Omit<Toast, 'id' | 'type' | 'message'>>) => void;
+}
+
 // Promise-based toast for async operations
 export const promiseToast = {
-  loading: (promise: Promise<any>, messages: {
+  loading: (toast: ToastAPI, promise: Promise<unknown>, messages: {
     loading: string;
     success: string;
     error: string;
   }) => {
-    const toast = useToast();
-
     const loadingId = toast.info(messages.loading, { duration: 0 });
 
     return promise

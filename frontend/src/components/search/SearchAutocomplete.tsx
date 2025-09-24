@@ -145,9 +145,9 @@ export function SearchAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 300);
 
-  // Generate suggestions based on query
+  // Generate suggestions based on debounced query
   const filteredSuggestions = React.useMemo(() => {
-    if (!query.trim()) {
+    if (!debouncedQuery.trim()) {
       const recent = recentSearches.slice(0, 5).map((text, index) => ({
         id: `recent-${index}`,
         text,
@@ -162,9 +162,10 @@ export function SearchAutocomplete({
     }
 
     return suggestions.filter(s =>
-      s.text.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 8);
-  }, [query, suggestions, recentSearches, popularSearches]);
+      s.text.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+      (s.category && s.category.toLowerCase().includes(debouncedQuery.toLowerCase()))
+    );
+  }, [debouncedQuery, suggestions, recentSearches, popularSearches]);
 
   const handleSearch = useCallback((searchQuery?: string) => {
     const queryToSearch = searchQuery || query;
@@ -392,7 +393,7 @@ export function SearchAutocomplete({
             </div>
           ) : query && !isLoading ? (
             <div className="px-3 py-4 text-center text-gray-500 text-sm">
-              No suggestions found for "{query}"
+              No suggestions found for &quot;{query}&quot;
             </div>
           ) : null}
         </div>

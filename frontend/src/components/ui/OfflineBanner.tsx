@@ -52,7 +52,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
           <div className="flex-1">
             {showOfflineBanner ? (
               <div>
-                <p className="font-medium">You're currently offline</p>
+                <p className="font-medium">You&apos;re currently offline</p>
                 <p className="text-sm opacity-90 mt-1">
                   {offlineData.hasOfflineProducts || offlineData.hasOfflineCart
                     ? `Some features are available offline. Last synced: ${formatLastSync(offlineData.lastSync)}`

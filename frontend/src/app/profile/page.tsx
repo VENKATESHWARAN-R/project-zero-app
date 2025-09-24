@@ -247,7 +247,7 @@ export default function ProfilePage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">No Orders Yet</h3>
-                <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
+                <p className="text-gray-500 mb-4">You haven&apos;t placed any orders yet.</p>
                 <Link
                   href="/products"
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"

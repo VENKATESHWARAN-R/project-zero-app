@@ -324,9 +324,9 @@ export function InputGroup({ children, className }: InputGroupProps) {
     <div className={cn('flex', className)}>
       {React.Children.map(children, (child, index) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, {
+          return React.cloneElement(child as React.ReactElement<React.InputHTMLAttributes<HTMLInputElement>>, {
             className: cn(
-              (child.props as any)?.className,
+              (child.props as React.InputHTMLAttributes<HTMLInputElement>)?.className,
               index === 0 ? 'rounded-r-none' : 'rounded-l-none border-l-0',
               'focus-visible:z-10'
             ),

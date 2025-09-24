@@ -17,7 +17,7 @@ export default function NotFound() {
         {/* Error Message */}
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Page Not Found</h1>
         <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto">
-          Oops! The page you're looking for doesn't exist or has been moved.
+          Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
 
         {/* Action Buttons */}
@@ -39,7 +39,7 @@ export default function NotFound() {
         {/* Helpful Links */}
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Maybe you're looking for:
+            Maybe you&apos;re looking for:
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-2xl mx-auto">
             <Link
