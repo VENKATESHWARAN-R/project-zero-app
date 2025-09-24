@@ -1,0 +1,222 @@
+version: '3.9'
+
+services:
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    image: project-zero-auth
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: 8001
+      HOST: 0.0.0.0
+      ENVIRONMENT: development
+      DATABASE_URL: sqlite:////data/auth_service.db
+      JWT_SECRET: dev-secret-key-change-in-prod
+      ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
+      LOG_LEVEL: INFO
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - auth_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/auth-service/src
+        - action: rebuild
+          path: ./services/auth-service/main.py
+        - action: rebuild
+          path: ./services/auth-service/pyproject.toml
+        - action: rebuild
+          path: ./services/auth-service/uv.lock
+        - action: rebuild
+          path: ./services/auth-service/Dockerfile
+
+  product-service:
+    build:
+      context: ./services/product-catalog-service
+      dockerfile: Dockerfile
+    image: project-zero-product
+    ports:
+      - "8004:8004"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8004
+      DATABASE_URL: sqlite:////data/product_catalog.db
+      AUTH_SERVICE_URL: http://auth-service:8001
+      LOG_LEVEL: INFO
+    volumes:
+      - product_data:/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8004
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/product-catalog-service/src
+        - action: rebuild
+          path: ./services/product-catalog-service/pyproject.toml
+        - action: rebuild
+          path: ./services/product-catalog-service/uv.lock
+        - action: rebuild
+          path: ./services/product-catalog-service/Dockerfile
+
+  cart-service:
+    build:
+      context: ./services/cart-service
+      dockerfile: Dockerfile
+    image: project-zero-cart
+    ports:
+      - "8007:8007"
+    environment:
+      PORT: 8007
+      NODE_ENV: production
+      DATABASE_URL: sqlite:////data/cart.db
+      AUTH_SERVICE_URL: http://auth-service:8001
+      PRODUCT_SERVICE_URL: http://product-service:8004
+      JWT_SECRET: dev-secret-key-change-in-prod
+      LOG_LEVEL: info
+      REQUEST_TIMEOUT: 5000
+      CORS_ORIGIN: http://localhost:3000,http://frontend:3000
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - cart_data:/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/cart-service/src
+        - action: rebuild
+          path: ./services/cart-service/scripts
+        - action: rebuild
+          path: ./services/cart-service/package.json
+        - action: rebuild
+          path: ./services/cart-service/yarn.lock
+        - action: rebuild
+          path: ./services/cart-service/Dockerfile
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+    image: project-zero-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_AUTH_API_URL: http://auth-service:8001
+      NEXT_PUBLIC_PRODUCTS_API_URL: http://product-service:8004
+      NEXT_PUBLIC_CART_API_URL: http://cart-service:8007
+      NEXT_PUBLIC_APP_NAME: Project Zero Store
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      cart-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend/src
+        - action: rebuild
+          path: ./frontend/public
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
+        - action: rebuild
+          path: ./frontend/next.config.ts
+        - action: rebuild
+          path: ./frontend/Dockerfile
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: project-zero-postgres
+    environment:
+      POSTGRES_DB: project_zero
+      POSTGRES_USER: projectzero
+      POSTGRES_PASSWORD: projectzero
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U projectzero -d project_zero"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: project-zero-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  project-zero-net:
+    driver: bridge
+
+volumes:
+  auth_data:
+  product_data:
+  cart_data:
+  postgres_data:
+  redis_data:

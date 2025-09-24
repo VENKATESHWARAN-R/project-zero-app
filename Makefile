@@ -1,26 +1,40 @@
+COMPOSE_FILE ?= docker-compose.yml
+DOCKER_COMPOSE := docker compose -f $(COMPOSE_FILE)
+SERVICE ?=
 
-.PHONY: all auth-service product-catalog-service cart-service frontend stop
+.PHONY: up down build restart logs ps watch clean start stop
 
-all: auth-service product-catalog-service cart-service frontend
+start: up
 
-auth-service:
-	@echo "Starting auth-service..."
-	@cd services/auth-service && uv run uvicorn main:app --host 0.0.0.0 --port 8001 --reload &
+up:
+	@echo "Starting services $(if $(SERVICE),($(SERVICE)),(all)) via docker compose..."
+	@DOCKER_BUILDKIT=1 $(DOCKER_COMPOSE) up -d $(SERVICE)
 
-product-catalog-service:
-	@echo "Starting product-catalog-service..."
-	@cd services/product-catalog-service && uv run uvicorn src.main:app --reload --port 8004 &
+stop: down
 
-cart-service:
-	@echo "Starting cart-service..."
-	@cd services/cart-service && yarn dev &
+down:
+	@echo "Stopping services $(if $(SERVICE),($(SERVICE)),(all))..."
+	@$(DOCKER_COMPOSE) down
 
-frontend:
-	@echo "Starting frontend..."
-	@cd frontend && npm run dev &
+build:
+	@echo "Building images $(if $(SERVICE),for $(SERVICE),for all services)..."
+	@DOCKER_BUILDKIT=1 $(DOCKER_COMPOSE) build $(SERVICE)
 
-stop:
-	@echo "Stopping all services..."
-	@killall -9 uvicorn || true
-	@fuser -k 3000/tcp || true
-	@fuser -k 8007/tcp || true
+restart:
+	@echo "Restarting services $(if $(SERVICE),($(SERVICE)),(all))..."
+	@$(DOCKER_COMPOSE) restart $(SERVICE)
+
+logs:
+	@echo "Tailing logs $(if $(SERVICE),for $(SERVICE),for all services)..."
+	@$(DOCKER_COMPOSE) logs -f $(SERVICE)
+
+ps:
+	@$(DOCKER_COMPOSE) ps
+
+watch:
+	@echo "Watching for source changes $(if $(SERVICE),on $(SERVICE),on all services)..."
+	@DOCKER_BUILDKIT=1 $(DOCKER_COMPOSE) watch $(SERVICE)
+
+clean:
+	@echo "Stopping and removing containers, networks, and volumes..."
+	@$(DOCKER_COMPOSE) down --volumes --remove-orphans
