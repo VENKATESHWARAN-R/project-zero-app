@@ -78,6 +78,7 @@ export function FormField({
       <div className={cn('relative', fieldClassName)}>
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
+            const childProps = child.props as { className?: string };
             return React.cloneElement(child, {
               id: fieldId,
               'aria-invalid': hasError ? 'true' : 'false',
@@ -91,7 +92,7 @@ export function FormField({
                 ? `${fieldId}-helper`
                 : undefined,
               className: cn(
-                child.props.className,
+                childProps.className,
                 'transition-all duration-200',
                 hasError
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
@@ -101,7 +102,7 @@ export function FormField({
                   ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
                   : 'focus:ring-blue-500/20'
               ),
-            } as any);
+            } as Partial<typeof child.props>);
           }
           return child;
         })}
