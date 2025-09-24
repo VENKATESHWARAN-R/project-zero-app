@@ -17,7 +17,7 @@ export interface CartItem {
     category?: string;
     imageUrl: string;
     images?: string[];
-    specifications?: Record<string, any>;
+    specifications?: Record<string, unknown>;
     inStock: boolean;
     stockQuantity: number;
     createdAt?: string;

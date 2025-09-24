@@ -305,7 +305,6 @@ export function CheckboxField({
               error && 'border-red-500 focus:ring-red-500',
               inputProps?.className
             )}
-            aria-invalid={error ? 'true' : 'false'}
             aria-describedby={error ? `${fieldId}-error` : undefined}
           />
         </div>
@@ -330,7 +329,6 @@ export function CheckboxField({
         <div
           id={`${fieldId}-error`}
           className="text-sm text-red-600 flex items-start animate-fade-in-up ml-7"
-          role="alert"
         >
           <AlertCircle className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" />
           <span>{error}</span>
@@ -394,7 +392,6 @@ export function RadioGroupField({
                     'w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 transition-colors',
                     error && 'border-red-500 focus:ring-red-500'
                   )}
-                  aria-invalid={error ? 'true' : 'false'}
                 />
               </div>
               <div className="ml-3 text-sm">
@@ -417,7 +414,7 @@ export function RadioGroupField({
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 flex items-start animate-fade-in-up" role="alert">
+        <div className="text-sm text-red-600 flex items-start animate-fade-in-up">
           <AlertCircle className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" />
           <span>{error}</span>
         </div>

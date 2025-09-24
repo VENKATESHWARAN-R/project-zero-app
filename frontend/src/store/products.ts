@@ -8,6 +8,26 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { Product, ProductFilters, Category } from '@/types/product';
 import { ProductsService } from '@/services/products';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const detail = (error as { detail?: unknown }).detail;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail;
+    }
+
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+};
+
 interface ProductState {
   // State
   products: Product[];
@@ -97,11 +117,11 @@ export const useProductsStore = create<ProductState>()(
           lastUpdated: Date.now(),
         });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           products: [],
           isLoading: false,
-          error: error.detail || error.message || 'Failed to load products',
+          error: getErrorMessage(error, 'Failed to load products'),
         });
       }
     },
@@ -111,19 +131,18 @@ export const useProductsStore = create<ProductState>()(
 
       try {
         const product = await ProductsService.getProduct(id);
-        const transformedProduct = ProductsService.transformProductFromApi(product);
 
         set({
-          currentProduct: transformedProduct,
+          currentProduct: product,
           isLoading: false,
           error: null,
         });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           currentProduct: null,
           isLoading: false,
-          error: error.detail || error.message || 'Failed to load product',
+          error: getErrorMessage(error, 'Failed to load product'),
         });
       }
     },
@@ -137,10 +156,10 @@ export const useProductsStore = create<ProductState>()(
           error: null,
         });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           categories: [],
-          error: error.detail || error.message || 'Failed to load categories',
+          error: getErrorMessage(error, 'Failed to load categories'),
         });
       }
     },
@@ -174,11 +193,11 @@ export const useProductsStore = create<ProductState>()(
           lastUpdated: Date.now(),
         });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           products: [],
           isLoading: false,
-          error: error.detail || error.message || 'Search failed',
+          error: getErrorMessage(error, 'Search failed'),
         });
       }
     },

@@ -4,7 +4,7 @@
  */
 
 import { productsApi, handleApiCall, buildQueryParams } from '@/lib/api';
-import { Product, ProductsResponse, ProductFilters, Category, CategoriesResponse, RelatedProductsResponse, ProductSearchResponse } from '@/types/product';
+import { Product, ProductsResponse, ProductFilters, Category, CategoriesResponse, RelatedProductsResponse, ProductSearchResponse, ProductDetailResponse } from '@/types/product';
 import { productCache, cacheKeys, cacheTTL, persistentCache } from '@/lib/cache';
 
 export class ProductsService {
@@ -63,7 +63,7 @@ export class ProductsService {
     }
 
     const response = await handleApiCall(
-      () => productsApi.get<Product>(`/products/${id}`),
+      () => productsApi.get<ProductDetailResponse>(`/products/${id}`),
       `get product ${id}`
     );
 
@@ -299,7 +299,9 @@ export class ProductsService {
   /**
    * Transform API response to match frontend interface
    */
-  static transformProductFromApi(apiProduct: any): Product {
+  static transformProductFromApi(
+    apiProduct: ProductDetailResponse | ProductsResponse['products'][number]
+  ): Product {
     return {
       id: apiProduct.id,
       name: apiProduct.name,

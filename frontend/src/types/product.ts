@@ -14,7 +14,7 @@ export interface Product {
   images?: string[];
   inStock: boolean;
   stockQuantity: number;
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,8 +53,8 @@ export interface Pagination {
   has_prev: boolean;
 }
 
-// Alias for better consistency
-export interface ProductSearchResponse extends SearchProductsResponse {}
+// Alias for better consistency - removing empty interface that extends SearchProductsResponse
+export type ProductSearchResponse = SearchProductsResponse;
 
 export interface ProductsResponse {
   products: {
@@ -85,7 +85,7 @@ export interface ProductDetailResponse {
   images?: string[];
   in_stock: boolean;
   stock_quantity: number;
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

@@ -12,14 +12,14 @@ export interface ApiError {
   }[];
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: ApiError;
   status: number;
   message?: string;
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   data: T[];
   pagination: {
     page: number;
@@ -29,7 +29,7 @@ export interface PaginatedResponse<T = any> {
     has_next: boolean;
     has_prev: boolean;
   };
-  filters_applied?: Record<string, any>;
+  filters_applied?: Record<string, unknown>;
 }
 
 export interface HealthResponse {
@@ -83,7 +83,7 @@ export interface RateLimitInfo {
 }
 
 // Generic success response
-export interface SuccessResponse<T = any> {
+export interface SuccessResponse<T = unknown> {
   success: true;
   data: T;
   message?: string;

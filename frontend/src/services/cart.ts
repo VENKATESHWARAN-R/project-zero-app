@@ -4,15 +4,28 @@
  */
 
 import { cartApi, handleApiCall } from '@/lib/api';
-import { Cart, CartItem, CartSummary, AddToCartRequest, UpdateCartItemRequest, BulkAddToCartRequest, CartValidationResponse } from '@/types/cart';
+import { Cart, CartItem, CartSummary, AddToCartRequest, UpdateCartItemRequest, BulkAddToCartRequest, CartValidationResponse, CartResponse } from '@/types/cart';
+
+type ApiCartProduct = CartResponse['items'][number]['product'] & {
+  description?: string;
+  category?: string;
+  images?: string[];
+  specifications?: Record<string, unknown>;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type ApiCartItem = Omit<CartResponse['items'][number], 'product'> & {
+  product: ApiCartProduct;
+};
 
 export class CartService {
   /**
    * Get current user's cart with all items
    */
-  static async getCart(): Promise<Cart> {
+  static async getCart(): Promise<CartResponse> {
     return handleApiCall(
-      () => cartApi.get<Cart>('/cart'),
+      () => cartApi.get<CartResponse>('/cart'),
       'get cart'
     );
   }
@@ -211,7 +224,7 @@ export class CartService {
   /**
    * Transform API cart item to frontend interface
    */
-  static transformCartItemFromApi(apiItem: any): CartItem {
+  static transformCartItemFromApi(apiItem: ApiCartItem): CartItem {
     return {
       id: apiItem.id,
       productId: apiItem.product_id,
@@ -238,11 +251,11 @@ export class CartService {
   /**
    * Transform API cart response to frontend interface
    */
-  static transformCartFromApi(apiCart: any): Cart {
+  static transformCartFromApi(apiCart: CartResponse): Cart {
     return {
       id: apiCart.id,
       userId: apiCart.user_id,
-      items: apiCart.items.map((item: any) => this.transformCartItemFromApi(item)),
+      items: apiCart.items.map(item => this.transformCartItemFromApi(item as ApiCartItem)),
       totalAmount: apiCart.total_amount,
       itemCount: apiCart.item_count,
       currency: apiCart.currency,

@@ -6,8 +6,29 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { Cart, CartItem } from '@/types/cart';
+import { Product } from '@/types/product';
 import { CartService } from '@/services/cart';
 import { useAuthStore } from './auth';
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const detail = (error as { detail?: unknown }).detail;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail;
+    }
+
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+};
 
 interface CartState {
   // State
@@ -29,7 +50,7 @@ interface CartState {
   setLoading: (loading: boolean) => void;
 
   // Optimistic actions
-  addItemOptimistic: (productId: string, quantity: number, product: any) => void;
+  addItemOptimistic: (productId: string, quantity: number, product: Product) => void;
   updateItemQuantityOptimistic: (itemId: string, quantity: number) => void;
   removeItemOptimistic: (itemId: string) => void;
   rollbackOptimistic: () => void;
@@ -74,15 +95,17 @@ export const useCartStore = create<CartState>()(
           error: null,
           lastUpdated: Date.now(),
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Try to load from storage if API fails
         const authStore = useAuthStore.getState();
         const storedCart = CartService.loadCartFromStorage(authStore.user?.id);
 
+        const message = getErrorMessage(error, 'Failed to load cart');
+
         set({
           cart: storedCart,
           isLoading: false,
-          error: error.detail || error.message || 'Failed to load cart',
+          error: message,
           lastUpdated: storedCart ? Date.now() : null,
         });
       }
@@ -107,12 +130,12 @@ export const useCartStore = create<CartState>()(
         // Commit optimistic changes if they exist
         get().commitOptimistic();
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback optimistic changes on error
         get().rollbackOptimistic();
 
         set({
-          error: error.detail || error.message || 'Failed to add item to cart',
+          error: getErrorMessage(error, 'Failed to add item to cart'),
         });
         throw error;
       }
@@ -135,12 +158,12 @@ export const useCartStore = create<CartState>()(
         // Commit optimistic changes if they exist
         get().commitOptimistic();
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback optimistic changes on error
         get().rollbackOptimistic();
 
         set({
-          error: error.detail || error.message || 'Failed to update item quantity',
+          error: getErrorMessage(error, 'Failed to update item quantity'),
         });
         throw error;
       }
@@ -158,12 +181,12 @@ export const useCartStore = create<CartState>()(
         // Commit optimistic changes if they exist
         get().commitOptimistic();
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback optimistic changes on error
         get().rollbackOptimistic();
 
         set({
-          error: error.detail || error.message || 'Failed to remove item',
+          error: getErrorMessage(error, 'Failed to remove item'),
         });
         throw error;
       }
@@ -185,10 +208,10 @@ export const useCartStore = create<CartState>()(
           lastUpdated: Date.now(),
         });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           isLoading: false,
-          error: error.detail || error.message || 'Failed to clear cart',
+          error: getErrorMessage(error, 'Failed to clear cart'),
         });
         throw error;
       }
@@ -216,9 +239,9 @@ export const useCartStore = create<CartState>()(
         }
 
         return true;
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
-          error: error.detail || error.message || 'Failed to validate cart',
+          error: getErrorMessage(error, 'Failed to validate cart'),
         });
         return false;
       }
@@ -246,7 +269,7 @@ export const useCartStore = create<CartState>()(
     },
 
     // Optimistic actions
-    addItemOptimistic: (productId: string, quantity: number, product: any) => {
+    addItemOptimistic: (productId: string, quantity: number, product: Product) => {
       const currentCart = get().optimisticCart || get().cart;
 
       if (!currentCart) return;

@@ -8,6 +8,26 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { User, LoginRequest, RegisterRequest, AuthTokens } from '@/types/user';
 import { AuthService } from '@/services/auth';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const detail = (error as { detail?: unknown }).detail;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail;
+    }
+
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+};
+
 interface AuthState {
   // State
   user: User | null;
@@ -60,13 +80,13 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           user: null,
           tokens: null,
           isAuthenticated: false,
           isLoading: false,
-          error: error.detail || error.message || 'Login failed',
+          error: getErrorMessage(error, 'Login failed'),
         });
         throw error;
       }
@@ -93,13 +113,13 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         set({
           user: null,
           tokens: null,
           isAuthenticated: false,
           isLoading: false,
-          error: error.detail || error.message || 'Registration failed',
+          error: getErrorMessage(error, 'Registration failed'),
         });
         throw error;
       }
@@ -132,7 +152,7 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Even if logout fails, clear local state
         AuthService.clearTokens();
         AuthService.clearCurrentUser();
@@ -142,7 +162,7 @@ export const useAuthStore = create<AuthState>()(
           tokens: null,
           isAuthenticated: false,
           isLoading: false,
-          error: error.detail || error.message || 'Logout failed',
+          error: getErrorMessage(error, 'Logout failed'),
         });
       }
     },
@@ -170,7 +190,7 @@ export const useAuthStore = create<AuthState>()(
           tokens: newTokens,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Refresh failed, logout user
         get().logout();
         throw error;
@@ -205,7 +225,7 @@ export const useAuthStore = create<AuthState>()(
           // Token is invalid, clear state
           get().logout();
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Token verification failed, logout user
         get().logout();
         throw error;
@@ -242,13 +262,13 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Auth initialization failed:', error);
         set({
           user: null,
           tokens: null,
           isAuthenticated: false,
-          error: 'Failed to initialize authentication',
+          error: getErrorMessage(error, 'Failed to initialize authentication'),
         });
       } finally {
         set({ isInitializing: false });

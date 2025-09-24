@@ -123,7 +123,7 @@ export const ContactSchema = z.object({
 export type ContactFormData = z.infer<typeof ContactSchema>;
 
 // Form UI states
-export interface FormState<T = any> {
+export interface FormState<T = Record<string, unknown>> {
   data: T;
   errors: Record<string, string>;
   isSubmitting: boolean;
@@ -156,7 +156,7 @@ export interface FormSelectProps extends FormFieldProps {
 }
 
 // Form submission responses
-export interface FormSubmissionResponse<T = any> {
+export interface FormSubmissionResponse<T = unknown> {
   success: boolean;
   data?: T;
   errors?: Record<string, string>;
@@ -181,12 +181,12 @@ export interface UseFormReturn<T> {
     name: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     onBlur: () => void;
-    value: any;
+    value: T[keyof T] | undefined;
     error?: string;
   };
   handleSubmit: (onSubmit: (data: T) => void | Promise<void>) => (e: React.FormEvent) => Promise<void>;
   formState: FormState<T>;
-  setValue: (name: keyof T, value: any) => void;
+  setValue: (name: keyof T, value: T[keyof T] | undefined) => void;
   clearErrors: () => void;
   reset: (data?: Partial<T>) => void;
 }

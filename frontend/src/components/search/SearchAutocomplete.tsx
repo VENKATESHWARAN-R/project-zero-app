@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Search, X, Filter, ChevronDown, Clock, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -382,9 +383,11 @@ export function SearchAutocomplete({
                     )}
                   </div>
                   {'imageUrl' in suggestion && suggestion.imageUrl && (
-                    <img
+                    <Image
                       src={suggestion.imageUrl}
                       alt=""
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded object-cover"
                     />
                   )}
