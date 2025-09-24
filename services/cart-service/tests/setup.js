@@ -9,7 +9,7 @@ beforeAll(async () => {
   process.env.DATABASE_URL = 'sqlite::memory:';
   process.env.LOG_LEVEL = 'error';
   process.env.AUTH_SERVICE_URL = 'http://mock-auth-service:8001';
-  process.env.PRODUCT_SERVICE_URL = 'http://mock-product-service:8002';
+  process.env.PRODUCT_SERVICE_URL = 'http://mock-product-service:8004';
 
   try {
     await sequelize.authenticate();

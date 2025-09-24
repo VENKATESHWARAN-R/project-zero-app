@@ -184,7 +184,7 @@ Task: "Request logging middleware in src/middleware/requestLogger.js"
 3. All integration tests pass (user story validation)
 4. Service responds <200ms for cart operations
 5. Quickstart.md scenarios execute successfully
-6. Service integrates with auth (port 8001) and product (port 8002) services
+6. Service integrates with auth (port 8001) and product (port 8004) services
 7. Health checks return proper status
 8. Code coverage >80% for business logic
 9. ESLint passes with zero violations

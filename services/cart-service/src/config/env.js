@@ -27,7 +27,7 @@ const config = {
       timeout: parseInt(process.env.REQUEST_TIMEOUT || '5000'),
     },
     product: {
-      url: process.env.PRODUCT_SERVICE_URL || 'http://localhost:8002',
+      url: process.env.PRODUCT_SERVICE_URL || 'http://localhost:8004',
       timeout: parseInt(process.env.REQUEST_TIMEOUT || '5000'),
     },
   },

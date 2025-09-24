@@ -145,7 +145,7 @@
 - `DATABASE_URL`: Database connection string
 - `PORT`: Service port (default 8007)
 - `AUTH_SERVICE_URL`: Auth service URL (default http://localhost:8001)
-- `PRODUCT_SERVICE_URL`: Product service URL (default http://localhost:8002)
+- `PRODUCT_SERVICE_URL`: Product service URL (default http://localhost:8004)
 - `LOG_LEVEL`: Logging level (default info)
 - `CART_TTL_HOURS`: Cart expiration time (default 24)
 

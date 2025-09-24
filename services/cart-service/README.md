@@ -134,7 +134,7 @@ curl http://localhost:8007/health/ready
 
 ### 4. Cart Operations (Requires Auth & Product Services)
 
-**Prerequisites:** Both auth service (port 8001) and product service (port 8002) must be running.
+**Prerequisites:** Both auth service (port 8001) and product service (port 8004) must be running.
 
 #### Add Item to Cart
 ```bash
@@ -345,7 +345,7 @@ curl -s http://localhost:8007/health > health_response.json
 | `PORT` | Service port | `8007` |
 | `DATABASE_URL` | Database connection string | `sqlite:./cart.db` |
 | `AUTH_SERVICE_URL` | Auth service URL | `http://localhost:8001` |
-| `PRODUCT_SERVICE_URL` | Product service URL | `http://localhost:8002` |
+| `PRODUCT_SERVICE_URL` | Product service URL | `http://localhost:8004` |
 | `LOG_LEVEL` | Logging level | `info` |
 | `CART_TTL_HOURS` | Cart expiration time | `24` |
 | `MAX_QUANTITY_PER_ITEM` | Max quantity per item | `10` |
@@ -412,7 +412,7 @@ yarn db:reset
 
 ### Service Dependencies
 - **Auth Service** (port 8001): Token validation
-- **Product Catalog Service** (port 8002): Product validation and details
+- **Product Catalog Service** (port 8004): Product validation and details
 
 ### Data Model
 - **Cart**: User cart container with metadata
@@ -430,7 +430,7 @@ docker build -t cart-service:latest .
 ```bash
 docker run -p 8007:8007 \
   -e AUTH_SERVICE_URL=http://auth-service:8001 \
-  -e PRODUCT_SERVICE_URL=http://product-service:8002 \
+  -e PRODUCT_SERVICE_URL=http://product-service:8004 \
   cart-service:latest
 ```
 

@@ -90,7 +90,7 @@ The Product Catalog Service provides comprehensive product management and discov
 | `DATABASE_URL` | SQLAlchemy connection string | `sqlite:///./product_catalog.db` | No |
 | `AUTH_SERVICE_URL` | Authentication service base URL | `http://auth-service:8001` | Yes (prod) |
 | `HOST` | Bind host | `0.0.0.0` | No |
-| `PORT` | Service port | `8002` | No |
+| `PORT` | Service port | `8004` | No |
 
 ## 🏃 Quick Start
 
@@ -104,8 +104,8 @@ The Product Catalog Service provides comprehensive product management and discov
 ```bash
 cd services/product-catalog-service
 uv sync                    # Install dependencies
-uv run uvicorn src.main:app --reload --port 8002
-# Visit: http://localhost:8002/docs
+uv run uvicorn src.main:app --reload --port 8004
+# Visit: http://localhost:8004/docs
 ```
 
 ### Testing
@@ -141,7 +141,7 @@ docker build -t product-catalog-service:latest .
 
 ### Run Container (SQLite)
 ```bash
-docker run -p 8002:8002 \
+docker run -p 8004:8004 \
     -e AUTH_SERVICE_URL="http://auth-service:8001" \
     product-catalog-service:latest
 ```
@@ -158,7 +158,7 @@ docker run -d --name catalog-db --network project-zero-net \
     postgres:15
 
 # Start service
-docker run -p 8002:8002 --network project-zero-net \
+docker run -p 8004:8004 --network project-zero-net \
     -e DATABASE_URL="postgresql://cataloguser:catalogpass@catalog-db:5432/catalogdb" \
     -e AUTH_SERVICE_URL="http://auth-service:8001" \
     product-catalog-service:latest
@@ -166,7 +166,7 @@ docker run -p 8002:8002 --network project-zero-net \
 
 ### Health Check
 ```bash
-curl http://localhost:8002/health
+curl http://localhost:8004/health
 ```
 
 ## 🔐 Authentication Integration
@@ -181,7 +181,7 @@ TOKEN=$(curl -s -X POST http://localhost:8001/auth/login \
   | jq -r '.access_token')
 
 # Create product
-curl -X POST http://localhost:8002/products \
+curl -X POST http://localhost:8004/products \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

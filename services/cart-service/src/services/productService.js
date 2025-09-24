@@ -3,7 +3,7 @@ const axios = require('axios');
 class ProductService {
   constructor() {
     this.productServiceUrl =
-      process.env.PRODUCT_SERVICE_URL || 'http://localhost:8002';
+      process.env.PRODUCT_SERVICE_URL || 'http://localhost:4';
     this.timeout = parseInt(process.env.REQUEST_TIMEOUT || '5000');
   }
 

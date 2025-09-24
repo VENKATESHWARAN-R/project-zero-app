@@ -71,7 +71,7 @@ As an authenticated user browsing the Project Zero App e-commerce platform, I wa
 - **FR-009**: System MUST enforce quantity limits when adding or updating cart items [NEEDS CLARIFICATION: What are the specific quantity limits per item?]
 - **FR-010**: System MUST associate cart data with the authenticated user's ID
 - **FR-011**: System MUST persist cart items temporarily [NEEDS CLARIFICATION: How long should cart data persist without user activity?]
-- **FR-012**: System MUST integrate with product catalog service at http://localhost:8002 to validate products and get product details
+- **FR-012**: System MUST integrate with product catalog service at http://localhost:8004 to validate products and get product details
 - **FR-013**: System MUST integrate with auth service at http://localhost:8001 for user authentication verification
 - **FR-014**: System MUST handle integration failures gracefully when validating products or authenticating users
 - **FR-015**: Cart responses MUST include product details merged with cart item data

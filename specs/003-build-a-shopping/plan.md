@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Implement a shopping cart service using Node.js with Express framework to provide technology diversity in our microservices architecture. The service manages user shopping sessions with cart operations including add, remove, update, view, and clear functionality. Integration with auth service (localhost:8001) for authentication and product catalog service (localhost:8002) for product validation. Uses SQLite with Sequelize ORM for local development on port 8007.
+Implement a shopping cart service using Node.js with Express framework to provide technology diversity in our microservices architecture. The service manages user shopping sessions with cart operations including add, remove, update, view, and clear functionality. Integration with auth service (localhost:8001) for authentication and product catalog service (localhost:8004) for product validation. Uses SQLite with Sequelize ORM for local development on port 8007.
 
 ## Technical Context
 **Language/Version**: Node.js 18+ with JavaScript/ES6+

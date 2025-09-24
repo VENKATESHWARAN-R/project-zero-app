@@ -9,7 +9,7 @@
 - Node.js 18+ installed
 - Yarn package manager installed
 - Auth service running on port 8001
-- Product catalog service running on port 8002
+- Product catalog service running on port 8004
 
 ## Quick Setup
 
@@ -38,7 +38,7 @@ yarn dev
 PORT=8007
 DATABASE_URL=sqlite:./cart.db
 AUTH_SERVICE_URL=http://localhost:8001
-PRODUCT_SERVICE_URL=http://localhost:8002
+PRODUCT_SERVICE_URL=http://localhost:8004
 LOG_LEVEL=info
 CART_TTL_HOURS=24
 MAX_QUANTITY_PER_ITEM=10
@@ -60,7 +60,7 @@ REQUEST_TIMEOUT=5000       # Service request timeout (ms)
 - **Required**: Service must be running for authentication
 
 ### 2. Product Catalog Service (Required)
-- **URL**: http://localhost:8002
+- **URL**: http://localhost:8004
 - **Endpoints Used**:
   - `GET /products/{id}` - Product details
   - `GET /products/validate` - Bulk product validation
