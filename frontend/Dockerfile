@@ -80,8 +80,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Start the Next.js server
-CMD ["npm", "run", "start"]
+# Start the Next.js server on all interfaces
+CMD ["npx", "next", "start", "--hostname", "0.0.0.0", "--port", "3000"]
 
 # Metadata labels
 LABEL maintainer="Project Zero Team" \

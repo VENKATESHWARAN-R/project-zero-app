@@ -1,9 +1,14 @@
-const { v4: uuidv4 } = require('uuid');
+// Using crypto.randomUUID() as a built-in alternative to avoid UUID import issues
+const crypto = require('crypto');
 const logger = require('../services/logger');
 
 const requestLogger = (req, res, next) => {
-  // Generate correlation ID for request tracing
-  req.correlationId = req.headers['x-correlation-id'] || uuidv4();
+  // Generate correlation ID for request tracing using built-in crypto
+  const generateUUID = () => {
+    return crypto.randomUUID();
+  };
+  
+  req.correlationId = req.headers['x-correlation-id'] || generateUUID();
 
   // Set correlation ID in response headers
   res.setHeader('X-Correlation-ID', req.correlationId);

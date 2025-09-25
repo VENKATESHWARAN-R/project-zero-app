@@ -135,9 +135,14 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_AUTH_API_URL: http://auth-service:8001
-      NEXT_PUBLIC_PRODUCTS_API_URL: http://product-service:8004
-      NEXT_PUBLIC_CART_API_URL: http://cart-service:8007
+      # Client-side API URLs (browser accessible)
+      NEXT_PUBLIC_AUTH_API_URL: http://localhost:8001
+      NEXT_PUBLIC_PRODUCTS_API_URL: http://localhost:8004
+      NEXT_PUBLIC_CART_API_URL: http://localhost:8007
+      # Server-side API URLs (container accessible)
+      AUTH_API_URL: http://auth-service:8001
+      PRODUCTS_API_URL: http://product-service:8004
+      CART_API_URL: http://cart-service:8007
       NEXT_PUBLIC_APP_NAME: Project Zero Store
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
