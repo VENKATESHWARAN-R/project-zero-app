@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { LoginForm } from '@/components/auth/LoginForm'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()

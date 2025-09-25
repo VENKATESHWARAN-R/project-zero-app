@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/auth'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()

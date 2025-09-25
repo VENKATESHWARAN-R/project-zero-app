@@ -19,7 +19,11 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production \
+    NEXT_PUBLIC_AUTH_API_URL=http://localhost:8001 \
+    NEXT_PUBLIC_PRODUCTS_API_URL=http://localhost:8004 \
+    NEXT_PUBLIC_CART_API_URL=http://localhost:8007
 
 RUN apk add --no-cache libc6-compat
 
@@ -29,7 +33,7 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy application source
 COPY . .
 
-# Create the production build
+# Create the production build with build-time safety
 RUN npm run build
 
 # Stage 3: Install only production dependencies

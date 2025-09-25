@@ -26,58 +26,47 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   env: {
-    NEXT_PUBLIC_AUTH_API_URL: process.env.NEXT_PUBLIC_AUTH_API_URL,
-    NEXT_PUBLIC_PRODUCTS_API_URL: process.env.NEXT_PUBLIC_PRODUCTS_API_URL,
-    NEXT_PUBLIC_CART_API_URL: process.env.NEXT_PUBLIC_CART_API_URL,
+    NEXT_PUBLIC_AUTH_API_URL: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8001',
+    NEXT_PUBLIC_PRODUCTS_API_URL: process.env.NEXT_PUBLIC_PRODUCTS_API_URL || 'http://localhost:8004',
+    NEXT_PUBLIC_CART_API_URL: process.env.NEXT_PUBLIC_CART_API_URL || 'http://localhost:8007',
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
-  webpack: (config) => {
-    // Optimize bundle splitting
-    config.optimization = {
-      ...config.optimization,
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          default: {
-            minChunks: 2,
-            reuseExistingChunk: true,
-          },
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            priority: 10,
-            chunks: 'all',
-            enforce: true,
-          },
-          ui: {
-            test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-            name: 'ui-components',
-            priority: 20,
-            chunks: 'all',
-            minChunks: 2,
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            priority: 5,
-            chunks: 'all',
-            reuseExistingChunk: true,
+  // Simplified webpack config for better build stability
+  webpack: (config, { isServer }) => {
+    // Only apply optimizations on client-side
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization?.splitChunks,
+          cacheGroups: {
+            ...config.optimization?.splitChunks?.cacheGroups,
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              chunks: 'all',
+            },
           },
         },
-      },
-    };
+      };
+    }
 
     return config;
+  },
+  // Skip static optimization for pages that make API calls
+  generateBuildId: async () => {
+    return process.env.BUILD_ID || 'build-' + Date.now();
   },
 };
 

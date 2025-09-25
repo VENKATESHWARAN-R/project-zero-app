@@ -1,26 +1,28 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useProductStore } from '@/store/products'
-import { ProductCard } from '@/components/product/ProductCard'
-import Loading from '@/components/ui/Loading'
+import { Metadata } from 'next'
+import { BuildSafeProductsService } from '@/lib/build-safe-api'
+import { FeaturedProducts } from '@/components/home/FeaturedProducts'
 import { Product } from '@/types/product'
 
-export default function Home() {
-  const { products, isLoading, error, loadProducts } = useProductStore()
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+export const metadata: Metadata = {
+  title: 'Project Zero Store - Premium Electronics & Gadgets',
+  description: 'Discover amazing products at great prices. Shop the latest electronics, gadgets, and more at Project Zero Store.',
+  keywords: 'electronics, gadgets, shopping, online store, project zero',
+}
 
-  useEffect(() => {
-    loadProducts({ limit: 8 })
-  }, [loadProducts])
+// Enable static generation with revalidation
+export const revalidate = 3600 // Revalidate every hour
 
-  useEffect(() => {
-    setFeaturedProducts(products.slice(0, 8))
-  }, [products])
+export default async function Home() {
+  // Fetch featured products server-side with build-time safety
+  let featuredProducts: Product[] = []
+  let error: string | null = null
 
-  if (isLoading) {
-    return <Loading />
+  try {
+    featuredProducts = await BuildSafeProductsService.getFeaturedProducts(8)
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Failed to load products'
+    console.warn('Failed to load products on homepage:', err)
   }
 
   if (error) {
@@ -28,12 +30,12 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Products</h1>
         <p className="text-gray-600 mb-4">{error}</p>
-        <button
-          onClick={() => loadProducts({ limit: 8 })}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        <Link
+          href="/products"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block"
         >
-          Try Again
-        </button>
+          Browse All Products
+        </Link>
       </div>
     )
   }
@@ -96,30 +98,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Featured Products</h2>
-          <Link
-            href="/products"
-            className="text-blue-600 hover:text-blue-800 font-semibold"
-          >
-            View All Products →
-          </Link>
-        </div>
-
-        {featuredProducts.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No products available at the moment.</p>
-            <p className="text-gray-500 mt-2">Please check back later.</p>
-          </div>
-        )}
-      </section>
+      <FeaturedProducts initialProducts={featuredProducts} />
     </div>
   )
 }

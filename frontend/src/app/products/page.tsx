@@ -9,6 +9,9 @@ import { SearchBar } from '@/components/product/SearchBar'
 import Loading from '@/components/ui/Loading'
 import { ProductFilters as ProductFiltersType } from '@/types/product'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function ProductsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
