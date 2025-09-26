@@ -9,11 +9,11 @@ If you (Claude) modify code, you MUST update impacted service README(s) and this
 
 # Project Zero App – Core Background & AI Collaboration Guide
 
-Last Updated: 2025-09-23
+Last Updated: 2025-09-25
 
 ## 1. Project Background
 
-Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. The current focus is a hardened Authentication Service (Auth Service) providing identity and token lifecycle management for future product, order, cart, payment, and notification domains.
+Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. Active services include a hardened Authentication Service (Auth Service) for identity and token lifecycle management, and an Order Processing Service (Order Service) handling complete order workflows from cart checkout to delivery.
 
 Core Objectives:
 
@@ -28,9 +28,9 @@ Core Objectives:
 Frontend (Planned) ──► API Gateway (Planned, Go)
                                                      │
                                                      ├── Auth Service (Active, FastAPI)
+                                                     ├── Order Service (Active, FastAPI)
                                                      ├── Product Catalog (Planned)
                                                      ├── Cart (Planned)
-                                                     ├── Order (Planned)
                                                      ├── Payment (Planned)
                                                      ├── User Profile (Planned)
                                                      └── Notification (Planned)
@@ -38,7 +38,9 @@ Frontend (Planned) ──► API Gateway (Planned, Go)
 
 Foundational Infra (incremental): Docker, future Kubernetes (GKE), Terraform (GCP), PostgreSQL (primary RDBMS), Redis (caching/session/token blacklist), structured logging.
 
-## 3. Active Service: Auth Service
+## 3. Active Services
+
+### Auth Service
 
 Purpose: Central authority for user identity, credential validation, token issuance (access + refresh), token verification, logout / invalidation, and basic account protection (failed login throttling & lockout).
 
@@ -59,7 +61,30 @@ Out of Scope (Until Explicitly Planned):
 - User profile management (beyond authentication basics)
 - Inter-service event publishing
 
-## 4. API Surface (Auth Service)
+### Order Service
+
+Purpose: Complete order lifecycle management for e-commerce operations. Handles order creation from cart checkout, tax and shipping calculations, status tracking, and integration with auth, cart, and product catalog services.
+
+Responsibilities (In-Scope Now):
+
+- Order creation from cart with tax and shipping calculation
+- Complete CRUD operations for orders with status-based workflows
+- Admin interface for order management across all users
+- Weight-based shipping cost calculation with multiple tiers
+- Status tracking with complete order lifecycle management and audit trails
+- Service integration with auth, cart, and product catalog services
+
+Out of Scope (Until Explicitly Planned):
+
+- Payment processing integration
+- Real-time order notifications
+- Advanced shipping provider integrations
+- Order fulfillment automation
+- Inventory reservation
+
+## 4. API Surface
+
+### Auth Service
 
 Implemented:
 
@@ -74,9 +99,29 @@ Planned (Not Yet Exposed):
 
 - POST `/auth/register` – User self‑registration (service logic baseline exists)
 
+### Order Service
+
+Implemented:
+
+- POST `/orders` – Create order from cart
+- GET `/orders` – Get user order history
+- GET `/orders/{id}` – Get order details
+- PATCH `/orders/{id}` – Modify order (status-dependent)
+- POST `/orders/{id}/cancel` – Cancel order
+- PUT `/orders/{id}/status` – Update order status (admin)
+- GET `/orders/{id}/status-history` – Get status history
+- GET `/admin/orders` – Get all orders (admin only)
+- PUT `/admin/orders/{id}/status` – Admin status updates
+- POST `/shipping/calculate` – Calculate shipping cost
+- GET `/shipping/rates` – Get available shipping rates
+- GET `/health` – Basic health check
+- GET `/health/ready` – Readiness check with dependencies
+
 Response & error formats follow FastAPI / Pydantic conventions with JSON bodies and standard HTTP status codes (200 / 401 / 422 / 429 / 500). Rate limiting surfaces 429 with a retry message.
 
-## 5. Environment Variables (Auth Service)
+## 5. Environment Variables
+
+### Auth Service
 
 | Name | Purpose | Typical Value (Dev) | Required | Notes |
 |------|---------|---------------------|----------|-------|
@@ -89,9 +134,24 @@ Response & error formats follow FastAPI / Pydantic conventions with JSON bodies 
 | `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
 | `PORT` | Service port | `8001` | No | Exposed internally via gateway |
 
-If adding new environment variables: (1) update this table, (2) update `services/auth-service/README.md`, (3) ensure tests reflect new configuration.
+### Order Service
 
-## 6. Local Development (Auth Service)
+| Name | Purpose | Typical Value (Dev) | Required | Notes |
+|------|---------|---------------------|----------|-------|
+| `DATABASE_URL` | SQLAlchemy connection string | `sqlite:///./order_service.db` | No | Use PostgreSQL in prod (`postgresql://user:pass@host:5432/db`) |
+| `JWT_SECRET_KEY` | HMAC secret for JWT signing (must match auth service) | Auto-generated | Recommended | Provide strong 256-bit value in prod |
+| `AUTH_SERVICE_URL` | Auth service URL | `http://localhost:8001` | Yes | Used for token verification |
+| `CART_SERVICE_URL` | Cart service URL | `http://localhost:8007` | Yes | Used for cart retrieval |
+| `PRODUCT_SERVICE_URL` | Product catalog URL | `http://localhost:8004` | Yes | Used for product validation |
+| `TAX_RATE` | Fixed tax rate | `0.085` (8.5%) | No | Applied to order subtotal |
+| `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
+| `PORT` | Service port | `8008` | No | Exposed internally via gateway |
+
+If adding new environment variables: (1) update this table, (2) update respective service README, (3) ensure tests reflect new configuration.
+
+## 6. Local Development
+
+### Auth Service
 
 Prerequisites: Python 3.13+, `uv` installed, optional Docker / PostgreSQL.
 
@@ -126,7 +186,44 @@ uv run ruff check .
 uv run ruff format .
 ```
 
+### Order Service
+
+Prerequisites: Python 3.13+, `uv` installed, optional Docker / PostgreSQL.
+
+Quick Start:
+
+```bash
+cd services/order-service
+uv sync                                    # install deps
+uv run uvicorn main:app --reload --port 8008
+# Visit: http://localhost:8008/docs
+```
+
+Using SQLite (default) requires no extra setup. For PostgreSQL:
+
+```bash
+export DATABASE_URL=postgresql://orderuser:pass@localhost:5432/orderdb
+uv run uvicorn main:app --port 8008
+```
+
+Run Tests:
+
+```bash
+uv run pytest            # all tests
+uv run pytest tests/contract/
+uv run pytest --cov=src --cov-report=term-missing
+```
+
+Lint & Format:
+
+```bash
+uv run ruff check .
+uv run ruff format .
+```
+
 ## 7. Docker Packaging & Execution
+
+### Auth Service
 
 Build Image:
 
@@ -159,16 +256,73 @@ docker run --rm -p 8001:8001 --network project-zero-net \
 
 Health Check: `curl http://localhost:8001/health`
 
+### Order Service
+
+Build Image:
+
+```bash
+cd services/order-service
+docker build -t order-service:latest .
+```
+
+Run Container (ephemeral SQLite):
+
+```bash
+docker run -p 8008:8008 \
+    -e JWT_SECRET_KEY="change-me-dev" \
+    -e AUTH_SERVICE_URL="http://host.docker.internal:8001" \
+    -e CART_SERVICE_URL="http://host.docker.internal:8007" \
+    -e PRODUCT_SERVICE_URL="http://host.docker.internal:8004" \
+    order-service:latest
+```
+
+Run with PostgreSQL:
+
+```bash
+docker network create project-zero-net || true
+docker run -d --name order-db --network project-zero-net \
+    -e POSTGRES_DB=orderdb -e POSTGRES_USER=orderuser -e POSTGRES_PASSWORD=orderpass \
+    postgres:15
+
+docker run --rm -p 8008:8008 --network project-zero-net \
+    -e DATABASE_URL=postgresql://orderuser:orderpass@order-db:5432/orderdb \
+    -e JWT_SECRET_KEY="strong-dev-secret" \
+    -e AUTH_SERVICE_URL="http://auth-service:8001" \
+    -e CART_SERVICE_URL="http://cart-service:8007" \
+    -e PRODUCT_SERVICE_URL="http://product-service:8004" \
+    order-service:latest
+```
+
+Health Check: `curl http://localhost:8008/health`
+
 ## 8. Service Dependencies & External Interactions
 
-Current External Dependencies:
+### Auth Service
 
+External Dependencies:
 - Database: SQLite (dev) / PostgreSQL (planned prod)
 - In-Memory / Cache (Planned): Redis for token blacklist / rate data
 
-Incoming Callers (Future): Product, Order, Cart, Payment, Profile services will call `GET /auth/verify` to validate tokens. API Gateway will forward auth endpoints transparently.
+Incoming Callers: Order Service calls `GET /auth/verify` to validate tokens. API Gateway will forward auth endpoints transparently.
 
-No outbound calls to other microservices are currently implemented. When adding any new outbound integration, document: (a) target base URL / discovery mechanism, (b) request contract, (c) failure handling & timeout policy, (d) retry/backoff strategy.
+Outbound Calls: None currently implemented.
+
+### Order Service
+
+External Dependencies:
+- Database: SQLite (dev) / PostgreSQL (planned prod)
+- Auth Service: JWT token verification via `GET /auth/verify`
+- Cart Service: Cart retrieval and clearing (planned integration)
+- Product Service: Product validation and details (planned integration)
+
+Incoming Callers: Frontend and API Gateway will call order management endpoints.
+
+Outbound Calls:
+- Auth Service for token validation
+- Cart Service for cart operations (when implemented)
+- Product Service for product validation (when implemented)
+
+When adding new outbound integrations, document: (a) target base URL / discovery mechanism, (b) request contract, (c) failure handling & timeout policy, (d) retry/backoff strategy.
 
 ## 9. AI Assistant (Claude) Contribution Protocol
 
@@ -178,7 +332,7 @@ Golden Rules:
 
 1. Minimize Diff Surface: Change only what the requirement demands.
 2. Keep Docs Synchronized: Any code change impacting behavior, interface, configuration, or environment MUST update:
-   - `services/auth-service/README.md` (service operational detail)
+   - Affected service README (`services/{service-name}/README.md`)
    - `CLAUDE.md` (if architectural scope or protocol changes)
    - Relevant spec file under `specs/` (if requirement/story altered)
 3. Explicit Contracts: Before altering endpoints or env vars, restate the proposed contract (input shape, output shape, error modes) in commit message or PR description.
@@ -231,7 +385,6 @@ Do not expand here until activated. Each future service will replicate documenta
 
 - Product Catalog: Read/search products
 - Cart: Session-based cart aggregation
-- Order: Order orchestration from cart & payment
 - Payment: Payment intent capture (mock or gateway integration)
 - User Profile: Non-auth user data (addresses, preferences)
 - Notification: Email/SMS/Webhook delivery
@@ -254,6 +407,16 @@ docker run -p 8001:8001 auth-service:latest
 
 # Health probe
 curl -s http://localhost:8001/health | jq '.'
+
+# Order service dev
+cd services/order-service && uv sync && uv run uvicorn main:app --reload --port 8008
+
+# Docker build & run order service
+docker build -t order-service:latest services/order-service
+docker run -p 8008:8008 order-service:latest
+
+# Order service health probe
+curl -s http://localhost:8008/health | jq '.'
 ```
 
 ## 14. Changelog (High-Level)
@@ -261,6 +424,7 @@ curl -s http://localhost:8001/health | jq '.'
 | Date | Change |
 |------|--------|
 | 2025-09-23 | Initial condensed CLAUDE.md authored; established AI protocol |
+| 2025-09-25 | Order Processing Service implemented with complete order lifecycle management, tax/shipping calculation, status tracking, and microservice integrations |
 
 ---
 Maintain this file as a compact operational contract. If it becomes bloated, refactor detail into service-specific READMEs or specs and relink.

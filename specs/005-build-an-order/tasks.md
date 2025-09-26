@@ -39,21 +39,21 @@
 
 ## Phase 3.1: Project Setup & Infrastructure
 
-- [ ] **T001** Create project structure at services/order-service/ with src/, tests/, main.py, requirements.txt, Dockerfile
-- [ ] **T002** Initialize Python project dependencies (FastAPI 0.104+, SQLAlchemy 2.0+, Pydantic 2.0+, uvicorn, httpx, pytest, pytest-asyncio, psycopg2-binary, alembic) in services/order-service/requirements.txt
-- [ ] **T003** [P] Configure environment variables and settings in services/order-service/src/config.py (DATABASE_URL with SQLite dev/PostgreSQL prod, JWT_SECRET_KEY, SERVICE_URLS, TAX_RATE, PORT=8008)
-- [ ] **T004** [P] Setup database configuration with SQLAlchemy engine supporting both SQLite (dev) and PostgreSQL (prod) in services/order-service/src/database.py
-- [ ] **T005** [P] Configure structured logging with correlation IDs in services/order-service/src/logging_config.py
-- [ ] **T006** [P] Setup Alembic for database migrations with PostgreSQL production support in services/order-service/alembic.ini and services/order-service/alembic/
+- [X] **T001** Create project structure at services/order-service/ with src/, tests/, main.py, requirements.txt, Dockerfile
+- [X] **T002** Initialize Python project dependencies (FastAPI 0.104+, SQLAlchemy 2.0+, Pydantic 2.0+, uvicorn, httpx, pytest, pytest-asyncio, psycopg2-binary, alembic) in services/order-service/requirements.txt
+- [X] **T003** [P] Configure environment variables and settings in services/order-service/src/config.py (DATABASE_URL with SQLite dev/PostgreSQL prod, JWT_SECRET_KEY, SERVICE_URLS, TAX_RATE, PORT=8008)
+- [X] **T004** [P] Setup database configuration with SQLAlchemy engine supporting both SQLite (dev) and PostgreSQL (prod) in services/order-service/src/database.py
+- [X] **T005** [P] Configure structured logging with correlation IDs in services/order-service/src/logging_config.py
+- [X] **T006** [P] Setup Alembic for database migrations with PostgreSQL production support in services/order-service/alembic.ini and services/order-service/alembic/
 
 ## Phase 3.2: Data Models & Database Schema (FOUNDATION - Must complete before services)
 
-- [ ] **T007** [P] Order model with status enum, totals calculation, audit fields, PostgreSQL-compatible types in services/order-service/src/models/order.py
-- [ ] **T008** [P] OrderItem model with product snapshots, pricing, weight, PostgreSQL decimal precision in services/order-service/src/models/order_item.py
-- [ ] **T009** [P] ShippingAddress model with validation, country codes, PostgreSQL text fields in services/order-service/src/models/shipping_address.py
-- [ ] **T010** [P] OrderModification model for audit trail, change tracking, PostgreSQL JSONB for old/new values in services/order-service/src/models/order_modification.py
-- [ ] **T011** Database initialization script with table creation, constraints, indexes optimized for PostgreSQL in services/order-service/src/models/__init__.py
-- [ ] **T012** Create initial Alembic migration for all order-related tables with PostgreSQL-specific optimizations in services/order-service/alembic/versions/001_initial_schema.py
+- [X] **T007** [P] Order model with status enum, totals calculation, audit fields, PostgreSQL-compatible types in services/order-service/src/models/order.py
+- [X] **T008** [P] OrderItem model with product snapshots, pricing, weight, PostgreSQL decimal precision in services/order-service/src/models/order_item.py
+- [X] **T009** [P] ShippingAddress model with validation, country codes, PostgreSQL text fields in services/order-service/src/models/shipping_address.py
+- [X] **T010** [P] OrderModification model for audit trail, change tracking, PostgreSQL JSONB for old/new values in services/order-service/src/models/order_modification.py
+- [X] **T011** Database initialization script with table creation, constraints, indexes optimized for PostgreSQL in services/order-service/src/models/__init__.py
+- [X] **T012** Create initial Alembic migration for all order-related tables with PostgreSQL-specific optimizations in services/order-service/alembic/versions/001_initial_schema.py
 
 ## Phase 3.3: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.4
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**

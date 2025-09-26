@@ -125,6 +125,55 @@ services:
         - action: rebuild
           path: ./services/cart-service/Dockerfile
 
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    image: project-zero-order
+    ports:
+      - "8008:8008"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8008
+      DATABASE_URL: sqlite:///./data/order_service.db
+      JWT_SECRET_KEY: dev-secret-key-change-in-prod
+      AUTH_SERVICE_URL: http://auth-service:8001
+      CART_SERVICE_URL: http://cart-service:8007
+      PRODUCT_SERVICE_URL: http://product-service:8004
+      TAX_RATE: 0.085
+      LOG_LEVEL: INFO
+      ENVIRONMENT: development
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000
+    volumes:
+      - order_data:/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      cart-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/order-service/src
+        - action: rebuild
+          path: ./services/order-service/main.py
+        - action: rebuild
+          path: ./services/order-service/pyproject.toml
+        - action: rebuild
+          path: ./services/order-service/uv.lock
+        - action: rebuild
+          path: ./services/order-service/Dockerfile
+
   frontend:
     build:
       context: ./frontend
@@ -139,10 +188,12 @@ services:
       NEXT_PUBLIC_AUTH_API_URL: http://localhost:8001
       NEXT_PUBLIC_PRODUCTS_API_URL: http://localhost:8004
       NEXT_PUBLIC_CART_API_URL: http://localhost:8007
+      NEXT_PUBLIC_ORDER_API_URL: http://localhost:8008
       # Server-side API URLs (container accessible)
       AUTH_API_URL: http://auth-service:8001
       PRODUCTS_API_URL: http://product-service:8004
       CART_API_URL: http://cart-service:8007
+      ORDER_API_URL: http://order-service:8008
       NEXT_PUBLIC_APP_NAME: Project Zero Store
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
@@ -152,6 +203,8 @@ services:
       product-service:
         condition: service_healthy
       cart-service:
+        condition: service_healthy
+      order-service:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -221,5 +274,6 @@ volumes:
   auth_data:
   product_data:
   cart_data:
+  order_data:
   postgres_data:
   redis_data:
