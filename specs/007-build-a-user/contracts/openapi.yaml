@@ -1,0 +1,940 @@
+openapi: 3.0.3
+info:
+  title: User Profile Service API
+  description: User profile management service for Project Zero App e-commerce platform
+  version: 1.0.0
+  contact:
+    name: Project Zero Team
+servers:
+  - url: http://localhost:8002
+    description: Local development server
+  - url: https://api.projectzero.example.com/profile
+    description: Production server
+
+paths:
+  # Health Endpoints
+  /health:
+    get:
+      summary: Service health check
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      summary: Service readiness check
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+
+  # Profile Management
+  /profiles:
+    get:
+      summary: Get current user's profile
+      tags: [Profiles]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create user profile
+      tags: [Profiles]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreateRequest'
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Profile already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update user profile
+      tags: [Profiles]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Address Management
+  /addresses:
+    get:
+      summary: Get user's addresses
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: Filter by address type
+          schema:
+            type: string
+            enum: [shipping, billing]
+      responses:
+        '200':
+          description: Addresses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Add new address
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressCreateRequest'
+      responses:
+        '201':
+          description: Address created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /addresses/{address_id}:
+    get:
+      summary: Get specific address
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Address retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update address
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressUpdateRequest'
+      responses:
+        '200':
+          description: Address updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete address
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Address deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Address cannot be deleted (in use by active order)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /addresses/{address_id}/default:
+    put:
+      summary: Set address as default
+      tags: [Addresses]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Default address updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Preferences Management
+  /preferences:
+    get:
+      summary: Get user preferences
+      tags: [Preferences]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferencesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Preferences not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update user preferences
+      tags: [Preferences]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesUpdateRequest'
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferencesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Activity Logs
+  /activity:
+    get:
+      summary: Get user activity history
+      tags: [Activity]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Number of activities to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of activities to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: activity_type
+          in: query
+          description: Filter by activity type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Activity history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Admin Endpoints
+  /admin/profiles/{user_id}:
+    get:
+      summary: Get user profile (admin only)
+      tags: [Admin]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Profile Schemas
+    ProfileResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 42
+        first_name:
+          type: string
+          nullable: true
+          example: "John"
+        last_name:
+          type: string
+          nullable: true
+          example: "Doe"
+        phone:
+          type: string
+          nullable: true
+          example: "+1-555-123-4567"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-05-15"
+        profile_picture_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/profile.jpg"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - id
+        - user_id
+        - created_at
+        - updated_at
+
+    ProfileCreateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+          example: "John"
+        last_name:
+          type: string
+          maxLength: 100
+          example: "Doe"
+        phone:
+          type: string
+          maxLength: 20
+          pattern: '^\+[1-9]\d{1,14}$'
+          example: "+1-555-123-4567"
+        date_of_birth:
+          type: string
+          format: date
+          example: "1990-05-15"
+        profile_picture_url:
+          type: string
+          format: uri
+          example: "https://example.com/profile.jpg"
+
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: "John"
+        last_name:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: "Doe"
+        phone:
+          type: string
+          maxLength: 20
+          pattern: '^\+[1-9]\d{1,14}$'
+          nullable: true
+          example: "+1-555-123-4567"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-05-15"
+        profile_picture_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/profile.jpg"
+
+    # Address Schemas
+    AddressResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 42
+        address_type:
+          type: string
+          enum: [shipping, billing]
+          example: "shipping"
+        street_address:
+          type: string
+          example: "123 Main St"
+        address_line_2:
+          type: string
+          nullable: true
+          example: "Apt 4B"
+        city:
+          type: string
+          example: "San Francisco"
+        state_province:
+          type: string
+          nullable: true
+          example: "CA"
+        postal_code:
+          type: string
+          example: "94105"
+        country:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: "US"
+        label:
+          type: string
+          nullable: true
+          example: "Home"
+        is_default:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - id
+        - user_id
+        - address_type
+        - street_address
+        - city
+        - postal_code
+        - country
+        - is_default
+        - created_at
+        - updated_at
+
+    AddressCreateRequest:
+      type: object
+      properties:
+        address_type:
+          type: string
+          enum: [shipping, billing]
+          example: "shipping"
+        street_address:
+          type: string
+          maxLength: 255
+          example: "123 Main St"
+        address_line_2:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: "Apt 4B"
+        city:
+          type: string
+          maxLength: 100
+          example: "San Francisco"
+        state_province:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: "CA"
+        postal_code:
+          type: string
+          maxLength: 20
+          example: "94105"
+        country:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: "US"
+        label:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: "Home"
+        is_default:
+          type: boolean
+          default: false
+          example: false
+      required:
+        - address_type
+        - street_address
+        - city
+        - postal_code
+        - country
+
+    AddressUpdateRequest:
+      type: object
+      properties:
+        street_address:
+          type: string
+          maxLength: 255
+          example: "123 Main St"
+        address_line_2:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: "Apt 4B"
+        city:
+          type: string
+          maxLength: 100
+          example: "San Francisco"
+        state_province:
+          type: string
+          maxLength: 100
+          nullable: true
+          example: "CA"
+        postal_code:
+          type: string
+          maxLength: 20
+          example: "94105"
+        country:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: "US"
+        label:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: "Home"
+
+    # Preferences Schemas
+    PreferencesResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 42
+        email_marketing:
+          type: boolean
+          example: true
+        email_order_updates:
+          type: boolean
+          example: true
+        email_security_alerts:
+          type: boolean
+          example: true
+        sms_notifications:
+          type: boolean
+          example: false
+        preferred_language:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+          example: "en-US"
+        preferred_currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          example: "USD"
+        timezone:
+          type: string
+          example: "America/New_York"
+        profile_visibility:
+          type: string
+          enum: [public, private]
+          example: "private"
+        data_sharing_consent:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - id
+        - user_id
+        - email_marketing
+        - email_order_updates
+        - email_security_alerts
+        - sms_notifications
+        - preferred_language
+        - preferred_currency
+        - timezone
+        - profile_visibility
+        - data_sharing_consent
+        - created_at
+        - updated_at
+
+    PreferencesUpdateRequest:
+      type: object
+      properties:
+        email_marketing:
+          type: boolean
+          example: true
+        email_order_updates:
+          type: boolean
+          example: true
+        email_security_alerts:
+          type: boolean
+          example: true
+        sms_notifications:
+          type: boolean
+          example: false
+        preferred_language:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+          example: "en-US"
+        preferred_currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          example: "USD"
+        timezone:
+          type: string
+          example: "America/New_York"
+        profile_visibility:
+          type: string
+          enum: [public, private]
+          example: "private"
+        data_sharing_consent:
+          type: boolean
+          example: false
+
+    # Activity Schemas
+    ActivityResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 42
+        activity_type:
+          type: string
+          example: "profile_updated"
+        description:
+          type: string
+          example: "User updated their phone number"
+        entity_type:
+          type: string
+          nullable: true
+          example: "profile"
+        entity_id:
+          type: integer
+          nullable: true
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - id
+        - user_id
+        - activity_type
+        - description
+        - created_at
+
+    ActivityListResponse:
+      type: object
+      properties:
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityResponse'
+        total:
+          type: integer
+          example: 150
+        limit:
+          type: integer
+          example: 20
+        offset:
+          type: integer
+          example: 0
+      required:
+        - activities
+        - total
+        - limit
+        - offset
+
+    # Health Schemas
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: "healthy"
+        service:
+          type: string
+          example: "user-profile-service"
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        database:
+          type: string
+          enum: [connected, disconnected]
+          example: "connected"
+      required:
+        - status
+        - service
+        - version
+        - timestamp
+        - database
+
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+          example: "ready"
+        service:
+          type: string
+          example: "user-profile-service"
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [ready, not_ready]
+              example: "ready"
+            auth_service:
+              type: string
+              enum: [ready, not_ready]
+              example: "ready"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - status
+        - service
+        - checks
+        - timestamp
+
+    # Error Schemas
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        message:
+          type: string
+          example: "Phone number format is invalid"
+        details:
+          type: object
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+      required:
+        - error
+        - message
+        - timestamp
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Validation failed"
+            message: "Phone number format is invalid"
+            timestamp: "2025-09-27T10:30:00Z"
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Unauthorized"
+            message: "Invalid or missing authentication token"
+            timestamp: "2025-09-27T10:30:00Z"
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Forbidden"
+            message: "Insufficient permissions for this operation"
+            timestamp: "2025-09-27T10:30:00Z"
