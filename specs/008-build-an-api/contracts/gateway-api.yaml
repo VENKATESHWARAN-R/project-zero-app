@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: API Gateway Service
+  description: Central entry point for Project Zero App microservices
+  version: 1.0.0
+  contact:
+    name: Project Zero App Team
+    url: https://github.com/project-zero-app
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.project-zero.dev
+    description: Production server
+
+paths:
+  # Gateway Management Endpoints
+  /health:
+    get:
+      summary: Gateway health check
+      description: Returns the health status of the API gateway itself
+      operationId: getGatewayHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Gateway is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Gateway is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health/ready:
+    get:
+      summary: Gateway readiness check
+      description: Returns readiness status including dependency health
+      operationId: getGatewayReadiness
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Gateway is ready to serve traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Gateway is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /gateway/services:
+    get:
+      summary: List registered services
+      description: Returns the status of all registered backend services
+      operationId: getServices
+      tags:
+        - Gateway Management
+      responses:
+        '200':
+          description: List of registered services
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesResponse'
+
+  /gateway/routes:
+    get:
+      summary: List configured routes
+      description: Returns all configured routing rules
+      operationId: getRoutes
+      tags:
+        - Gateway Management
+      responses:
+        '200':
+          description: List of routing rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutesResponse'
+
+  /gateway/metrics:
+    get:
+      summary: Gateway metrics
+      description: Returns performance and usage metrics
+      operationId: getMetrics
+      tags:
+        - Gateway Management
+      responses:
+        '200':
+          description: Gateway metrics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+  # Proxied Service Endpoints
+  /api/auth/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Auth Service
+      description: Routes requests to the authentication service
+      operationId: proxyToAuth
+      tags:
+        - Proxy
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    post:
+      summary: Proxy to Auth Service
+      operationId: proxyToAuthPost
+      tags:
+        - Proxy
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Request proxied successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/profile/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Profile Service
+      operationId: proxyToProfile
+      tags:
+        - Proxy
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/products/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Product Catalog Service
+      operationId: proxyToProducts
+      tags:
+        - Proxy
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+
+  /api/cart/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Cart Service
+      operationId: proxyToCart
+      tags:
+        - Proxy
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+
+  /api/orders/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Order Service
+      operationId: proxyToOrders
+      tags:
+        - Proxy
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+
+  /api/payments/{proxy+}:
+    x-internal-route: true
+    get:
+      summary: Proxy to Payment Service
+      operationId: proxyToPayments
+      tags:
+        - Proxy
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProxyPath'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Request proxied successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login
+
+  parameters:
+    ProxyPath:
+      name: proxy+
+      in: path
+      required: true
+      description: The path to proxy to the backend service
+      schema:
+        type: string
+      example: "users/profile"
+
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: false
+      description: Request correlation ID for tracing
+      schema:
+        type: string
+        format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    BadGateway:
+      description: Backend service error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ServiceUnavailable:
+      description: Service temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        version:
+          type: string
+          example: "1.0.0"
+        uptime:
+          type: string
+          description: Service uptime duration
+          example: "2h30m15s"
+
+    ReadinessResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+          example: "ready"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        services:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceStatus'
+
+    ServiceStatus:
+      type: object
+      required:
+        - name
+        - status
+        - last_checked
+      properties:
+        name:
+          type: string
+          example: "auth-service"
+        status:
+          type: string
+          enum: [healthy, unhealthy, unknown]
+          example: "healthy"
+        url:
+          type: string
+          format: uri
+          example: "http://localhost:8001"
+        last_checked:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:29:45Z"
+        response_time:
+          type: number
+          description: Last health check response time in milliseconds
+          example: 25.5
+
+    ServicesResponse:
+      type: object
+      required:
+        - services
+        - total
+      properties:
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceStatus'
+        total:
+          type: integer
+          example: 6
+
+    RouteConfig:
+      type: object
+      required:
+        - path
+        - service_name
+      properties:
+        path:
+          type: string
+          example: "/api/auth/*"
+        method:
+          type: string
+          example: "GET"
+        service_name:
+          type: string
+          example: "auth-service"
+        strip_prefix:
+          type: boolean
+          example: false
+        auth_required:
+          type: boolean
+          example: true
+
+    RoutesResponse:
+      type: object
+      required:
+        - routes
+        - total
+      properties:
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteConfig'
+        total:
+          type: integer
+          example: 12
+
+    MetricsResponse:
+      type: object
+      required:
+        - timestamp
+        - requests
+        - rate_limits
+        - circuit_breakers
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        requests:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 15420
+            success:
+              type: integer
+              example: 14890
+            errors:
+              type: integer
+              example: 530
+            avg_response_time:
+              type: number
+              description: Average response time in milliseconds
+              example: 45.2
+        rate_limits:
+          type: object
+          properties:
+            active_limiters:
+              type: integer
+              example: 25
+            blocked_requests:
+              type: integer
+              example: 12
+        circuit_breakers:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              state:
+                type: string
+                enum: [closed, open, half_open]
+              failure_count:
+                type: integer
+              success_count:
+                type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - timestamp
+      properties:
+        error:
+          type: string
+          example: "Service temporarily unavailable"
+        message:
+          type: string
+          example: "The requested service is currently experiencing issues"
+        correlation_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-27T10:30:00Z"
+        details:
+          type: object
+          description: Additional error context
