@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: payment-service
+    ports:
+      - "8009:8009"
+    environment:
+      - PORT=8009
+      - HOST=0.0.0.0
+      - DEBUG=false
+      - DATABASE_URL=sqlite:///./payment_service.db
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - ORDER_SERVICE_URL=http://order-service:8008
+      - PAYMENT_SUCCESS_RATE=0.95
+      - PAYMENT_PROCESSING_DELAY_MIN=1000
+      - PAYMENT_PROCESSING_DELAY_MAX=3000
+      - PAYMENT_FAILURE_SCENARIOS=true
+      - WEBHOOK_SIMULATION_ENABLED=true
+      - WEBHOOK_DELAY_MIN=500
+      - WEBHOOK_DELAY_MAX=2000
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key}
+      - JWT_ALGORITHM=HS256
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    volumes:
+      - ./logs:/app/logs
+      - ./payment_service.db:/app/payment_service.db
+    networks:
+      - payment-network
+    depends_on:
+      - auth-service
+      - order-service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service for local testing
+  payment-service-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: payment-service-dev
+    ports:
+      - "8009:8009"
+    environment:
+      - PORT=8009
+      - HOST=0.0.0.0
+      - DEBUG=true
+      - DATABASE_URL=sqlite:///./payment_service_dev.db
+      - AUTH_SERVICE_URL=http://localhost:8001
+      - ORDER_SERVICE_URL=http://localhost:8008
+      - PAYMENT_SUCCESS_RATE=0.95
+      - PAYMENT_PROCESSING_DELAY_MIN=1000
+      - PAYMENT_PROCESSING_DELAY_MAX=3000
+      - PAYMENT_FAILURE_SCENARIOS=true
+      - WEBHOOK_SIMULATION_ENABLED=true
+      - WEBHOOK_DELAY_MIN=500
+      - WEBHOOK_DELAY_MAX=2000
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret-key}
+      - JWT_ALGORITHM=HS256
+      - LOG_LEVEL=DEBUG
+      - LOG_FORMAT=json
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    networks:
+      - payment-network
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8009", "--reload"]
+    profiles:
+      - dev
+
+networks:
+  payment-network:
+    driver: bridge
+    external: true
+
+volumes:
+  payment-logs:
+    driver: local

@@ -1,0 +1,986 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Payment Processing Service",
+    "description": "Mock payment processing service for Project Zero App e-commerce platform",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root endpoint.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint.\n\nReturns basic service health status without dependencies.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Readiness Check",
+        "description": "Readiness check endpoint.\n\nChecks if service is ready to handle requests by verifying\ndependencies like database and external services.",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "summary": "Liveness Check",
+        "description": "Liveness check endpoint.\n\nSimple check to verify the service is alive and responding.\nUsed by container orchestrators for restart decisions.",
+        "operationId": "liveness_check_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Process Payment",
+        "description": "Process a payment for an order.\n\nCreates a new payment transaction and processes it through the\nmock payment processor with realistic simulation.",
+        "operationId": "process_payment_api_v1_payments_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment History",
+        "description": "Retrieve payment history for authenticated user.\n\nReturns paginated list of user's payments with optional status filtering.",
+        "operationId": "get_payment_history_api_v1_payments_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Maximum number of payments to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Maximum number of payments to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of payments to skip",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of payments to skip"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PaymentStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by payment status",
+              "title": "Status"
+            },
+            "description": "Filter by payment status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{payment_id}": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment Details",
+        "description": "Retrieve details of a specific payment.\n\nReturns detailed information about a payment transaction\nif it belongs to the authenticated user.",
+        "operationId": "get_payment_details_api_v1_payments__payment_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Payment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{payment_id}/status": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment Status",
+        "description": "Retrieve current status of a payment.\n\nReturns the current status and last update time for a payment\nif it belongs to the authenticated user.",
+        "operationId": "get_payment_status_api_v1_payments__payment_id__status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Payment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment-methods": {
+      "get": {
+        "tags": [
+          "payment-methods"
+        ],
+        "summary": "Get Payment Methods",
+        "description": "Retrieve all payment methods for authenticated user.\n\nReturns all active payment methods belonging to the user,\nordered by creation date with default methods first.",
+        "operationId": "get_payment_methods_api_v1_payment_methods_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "payment-methods"
+        ],
+        "summary": "Add Payment Method",
+        "description": "Add a new payment method for authenticated user.\n\nCreates a new payment method with secure storage of payment details.\nAutomatically masks sensitive information for security.",
+        "operationId": "add_payment_method_api_v1_payment_methods_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/payment-methods/{method_id}": {
+      "delete": {
+        "tags": [
+          "payment-methods"
+        ],
+        "summary": "Remove Payment Method",
+        "description": "Remove a payment method for authenticated user.\n\nSoft deletes the payment method by setting is_active to False.\nCannot delete if there are pending payments using this method.",
+        "operationId": "remove_payment_method_api_v1_payment_methods__method_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "method_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Method Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webhooks/payment": {
+      "post": {
+        "tags": [
+          "webhooks"
+        ],
+        "summary": "Receive Payment Webhook",
+        "description": "Receive simulated payment gateway webhooks.\n\nThis endpoint processes webhook notifications from the mock payment gateway,\nupdating payment status and creating audit trail entries.\n\nNote: This endpoint does not require authentication as it simulates\nexternal gateway webhooks. In production, webhook signature validation\nwould be implemented.",
+        "operationId": "receive_payment_webhook_api_v1_webhooks_payment_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webhooks/events/{payment_id}": {
+      "get": {
+        "tags": [
+          "webhooks"
+        ],
+        "summary": "Get Webhook Events",
+        "description": "Get webhook events for a specific payment (for debugging/monitoring).\n\nThis endpoint is useful for debugging webhook delivery issues\nand monitoring webhook event history.",
+        "operationId": "get_webhook_events_api_v1_webhooks_events__payment_id__get",
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Payment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webhooks/test": {
+      "post": {
+        "tags": [
+          "webhooks"
+        ],
+        "summary": "Test Webhook Endpoint",
+        "description": "Test webhook endpoint for connectivity verification.\n\nThis endpoint can be used to test webhook connectivity\nand verify that the webhook service is responding correctly.",
+        "operationId": "test_webhook_endpoint_api_v1_webhooks_test_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PaymentHistoryResponse": {
+        "properties": {
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentResponse"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payments",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaymentHistoryResponse",
+        "description": "Payment history response model."
+      },
+      "PaymentMethodRequest": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/PaymentMethodType",
+            "description": "Payment method type"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Display Name",
+            "description": "User-friendly name for payment method"
+          },
+          "payment_details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payment Details",
+            "description": "Payment method details"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Set as default payment method",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "display_name",
+          "payment_details"
+        ],
+        "title": "PaymentMethodRequest",
+        "description": "Payment method request model."
+      },
+      "PaymentMethodResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "masked_details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Masked Details"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "type",
+          "display_name",
+          "masked_details",
+          "is_default",
+          "is_active",
+          "expires_at",
+          "created_at"
+        ],
+        "title": "PaymentMethodResponse",
+        "description": "Payment method response model."
+      },
+      "PaymentMethodType": {
+        "type": "string",
+        "enum": [
+          "CREDIT_CARD",
+          "DEBIT_CARD",
+          "PAYPAL"
+        ],
+        "title": "PaymentMethodType",
+        "description": "Payment method type enumeration."
+      },
+      "PaymentMethodsResponse": {
+        "properties": {
+          "payment_methods": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodResponse"
+            },
+            "type": "array",
+            "title": "Payment Methods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_methods"
+        ],
+        "title": "PaymentMethodsResponse",
+        "description": "Payment methods response model."
+      },
+      "PaymentRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id",
+            "description": "Order ID to process payment for"
+          },
+          "payment_method_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Method Id",
+            "description": "Payment method to use"
+          },
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "description": "Payment amount in cents"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Payment currency code",
+            "default": "USD"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Payment description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "payment_method_id",
+          "amount"
+        ],
+        "title": "PaymentRequest",
+        "description": "Payment request model."
+      },
+      "PaymentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "payment_method_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Method Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "gateway_transaction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gateway Transaction Id"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "user_id",
+          "payment_method_id",
+          "amount",
+          "currency",
+          "status",
+          "gateway_transaction_id",
+          "failure_reason",
+          "created_at",
+          "updated_at",
+          "processed_at"
+        ],
+        "title": "PaymentResponse",
+        "description": "Payment response model."
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "PROCESSING",
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED",
+          "REFUNDED"
+        ],
+        "title": "PaymentStatus",
+        "description": "Payment status enumeration following the state machine defined in data-model.md"
+      },
+      "PaymentStatusResponse": {
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_id",
+          "status",
+          "updated_at"
+        ],
+        "title": "PaymentStatusResponse",
+        "description": "Payment status response model."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WebhookPayload": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "description": "Type of webhook event"
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Id",
+            "description": "Payment transaction ID"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data",
+            "description": "Event-specific data"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp",
+            "description": "Event timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_type",
+          "payment_id",
+          "data"
+        ],
+        "title": "WebhookPayload",
+        "description": "Webhook payload model."
+      },
+      "WebhookResponse": {
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "title": "Received",
+            "description": "Whether webhook was received successfully"
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Processed At",
+            "description": "Processing timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "received",
+          "processed_at"
+        ],
+        "title": "WebhookResponse",
+        "description": "Webhook response model."
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

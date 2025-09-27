@@ -1,0 +1,1915 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Order Processing Service",
+    "description": "Order lifecycle management service for Project Zero App e-commerce platform",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Basic health check endpoint.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Readiness Check",
+        "description": "Readiness check with dependency validation.",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/": {
+      "post": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Create new order from cart",
+        "description": "Convert cart items to order, calculate totals, and create order record",
+        "operationId": "create_order_orders__post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Get user order history",
+        "description": "Retrieve all orders for authenticated user with pagination and filtering",
+        "operationId": "get_order_history_orders__get",
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by order status",
+              "title": "Status Filter"
+            },
+            "description": "Filter by order status"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Maximum number of orders to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Maximum number of orders to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of orders to skip",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of orders to skip"
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Get order details",
+        "description": "Retrieve complete order information including items and shipping address",
+        "operationId": "get_order_details_orders__order_id__get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Modify order",
+        "description": "Update order details (status-dependent restrictions apply)",
+        "operationId": "modify_order_orders__order_id__patch",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}/cancel": {
+      "post": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Cancel order",
+        "description": "Cancel order if status allows cancellation",
+        "operationId": "cancel_order_orders__order_id__cancel_post",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}/status": {
+      "put": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Update order status",
+        "description": "Update order status (admin privileges required)",
+        "operationId": "update_order_status_orders__order_id__status_put",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}/status-history": {
+      "get": {
+        "tags": [
+          "orders",
+          "orders"
+        ],
+        "summary": "Get order status history",
+        "description": "Retrieve complete status change history for an order",
+        "operationId": "get_order_status_history_orders__order_id__status_history_get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatusHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Get all orders (admin)",
+        "description": "Retrieve orders across all users with admin privileges",
+        "operationId": "get_all_orders_admin_admin_orders_get",
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by order status",
+              "title": "Status Filter"
+            },
+            "description": "Filter by order status"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by user ID",
+              "title": "User Id"
+            },
+            "description": "Filter by user ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Maximum number of orders",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of orders"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of orders to skip",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of orders to skip"
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders/{order_id}/status": {
+      "put": {
+        "tags": [
+          "admin",
+          "admin"
+        ],
+        "summary": "Update order status (admin)",
+        "description": "Update order status for fulfillment tracking",
+        "operationId": "update_order_status_admin_admin_orders__order_id__status_put",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Bearer JWT token",
+              "title": "Authorization"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/calculate": {
+      "post": {
+        "tags": [
+          "shipping",
+          "shipping"
+        ],
+        "summary": "Calculate shipping cost",
+        "description": "Calculate shipping cost for items and address",
+        "operationId": "calculate_shipping_cost_shipping_calculate_post",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShippingCalculateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingCalculateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/rates": {
+      "get": {
+        "tags": [
+          "shipping",
+          "shipping"
+        ],
+        "summary": "Get available shipping rates",
+        "description": "List available shipping options and rates",
+        "operationId": "get_shipping_rates_shipping_rates_get",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Correlation-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingRatesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminOrderHistoryResponse": {
+        "properties": {
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderResponse"
+            },
+            "type": "array",
+            "title": "Orders",
+            "description": "List of orders with user info"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of orders"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Maximum orders returned"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Number of orders skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "orders",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AdminOrderHistoryResponse",
+        "description": "Response for admin order history with user information."
+      },
+      "AdminOrderResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Order ID"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number",
+            "description": "Human-readable order number"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id",
+            "description": "User ID who placed the order"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus",
+            "description": "Current order status"
+          },
+          "subtotal": {
+            "type": "number",
+            "title": "Subtotal",
+            "description": "Order subtotal"
+          },
+          "tax_rate": {
+            "type": "number",
+            "title": "Tax Rate",
+            "description": "Applied tax rate"
+          },
+          "tax_amount": {
+            "type": "number",
+            "title": "Tax Amount",
+            "description": "Tax amount"
+          },
+          "shipping_cost": {
+            "type": "number",
+            "title": "Shipping Cost",
+            "description": "Shipping cost"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total",
+            "description": "Total order amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Currency code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Order creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "modification_count": {
+            "type": "integer",
+            "title": "Modification Count",
+            "description": "Number of modifications made"
+          },
+          "user_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Email",
+            "description": "Customer email for admin view"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "user_id",
+          "status",
+          "subtotal",
+          "tax_rate",
+          "tax_amount",
+          "shipping_cost",
+          "total",
+          "currency",
+          "created_at",
+          "updated_at",
+          "modification_count"
+        ],
+        "title": "AdminOrderResponse",
+        "description": "Order response for admin view with additional fields."
+      },
+      "CreateOrderRequest": {
+        "properties": {
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddressInput",
+            "description": "Shipping address"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Order notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shipping_address"
+        ],
+        "title": "CreateOrderRequest",
+        "description": "Request to create a new order."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ModifyOrderRequest": {
+        "properties": {
+          "shipping_address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShippingAddressInput"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Updated shipping address"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Updated order notes"
+          }
+        },
+        "type": "object",
+        "title": "ModifyOrderRequest",
+        "description": "Request to modify an existing order."
+      },
+      "OrderDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Order ID"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number",
+            "description": "Human-readable order number"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id",
+            "description": "User ID who placed the order"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus",
+            "description": "Current order status"
+          },
+          "subtotal": {
+            "type": "number",
+            "title": "Subtotal",
+            "description": "Order subtotal"
+          },
+          "tax_rate": {
+            "type": "number",
+            "title": "Tax Rate",
+            "description": "Applied tax rate"
+          },
+          "tax_amount": {
+            "type": "number",
+            "title": "Tax Amount",
+            "description": "Tax amount"
+          },
+          "shipping_cost": {
+            "type": "number",
+            "title": "Shipping Cost",
+            "description": "Shipping cost"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total",
+            "description": "Total order amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Currency code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Order creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "modification_count": {
+            "type": "integer",
+            "title": "Modification Count",
+            "description": "Number of modifications made"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Order items"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddress",
+            "description": "Shipping address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "user_id",
+          "status",
+          "subtotal",
+          "tax_rate",
+          "tax_amount",
+          "shipping_cost",
+          "total",
+          "currency",
+          "created_at",
+          "updated_at",
+          "modification_count",
+          "items",
+          "shipping_address"
+        ],
+        "title": "OrderDetailResponse",
+        "description": "Detailed order response with items and shipping address."
+      },
+      "OrderHistoryResponse": {
+        "properties": {
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderResponse"
+            },
+            "type": "array",
+            "title": "Orders",
+            "description": "List of orders"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of orders"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Maximum orders returned"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Number of orders skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "orders",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "OrderHistoryResponse",
+        "description": "Response for order history with pagination."
+      },
+      "OrderItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Order item ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id",
+            "description": "Product ID"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name",
+            "description": "Product name"
+          },
+          "product_sku": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Sku",
+            "description": "Product SKU"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "Quantity ordered"
+          },
+          "unit_price": {
+            "type": "number",
+            "title": "Unit Price",
+            "description": "Unit price at time of order"
+          },
+          "total_price": {
+            "type": "number",
+            "title": "Total Price",
+            "description": "Total price for this item"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight",
+            "description": "Item weight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "product_id",
+          "product_name",
+          "quantity",
+          "unit_price",
+          "total_price",
+          "weight"
+        ],
+        "title": "OrderItem",
+        "description": "Order item for responses."
+      },
+      "OrderResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Order ID"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number",
+            "description": "Human-readable order number"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id",
+            "description": "User ID who placed the order"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus",
+            "description": "Current order status"
+          },
+          "subtotal": {
+            "type": "number",
+            "title": "Subtotal",
+            "description": "Order subtotal"
+          },
+          "tax_rate": {
+            "type": "number",
+            "title": "Tax Rate",
+            "description": "Applied tax rate"
+          },
+          "tax_amount": {
+            "type": "number",
+            "title": "Tax Amount",
+            "description": "Tax amount"
+          },
+          "shipping_cost": {
+            "type": "number",
+            "title": "Shipping Cost",
+            "description": "Shipping cost"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total",
+            "description": "Total order amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Currency code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Order creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "modification_count": {
+            "type": "integer",
+            "title": "Modification Count",
+            "description": "Number of modifications made"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "user_id",
+          "status",
+          "subtotal",
+          "tax_rate",
+          "tax_amount",
+          "shipping_cost",
+          "total",
+          "currency",
+          "created_at",
+          "updated_at",
+          "modification_count"
+        ],
+        "title": "OrderResponse",
+        "description": "Basic order response."
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "CONFIRMED",
+          "PROCESSING",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "title": "OrderStatus",
+        "description": "Order lifecycle status enumeration."
+      },
+      "OrderStatusChange": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus",
+            "description": "Order status"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Status change timestamp"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Status change notes"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By",
+            "description": "User who made the change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "timestamp",
+          "updated_by"
+        ],
+        "title": "OrderStatusChange",
+        "description": "Order status change record."
+      },
+      "OrderStatusHistoryResponse": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id",
+            "description": "Order ID"
+          },
+          "status_history": {
+            "items": {
+              "$ref": "#/components/schemas/OrderStatusChange"
+            },
+            "type": "array",
+            "title": "Status History",
+            "description": "Status change history"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "status_history"
+        ],
+        "title": "OrderStatusHistoryResponse",
+        "description": "Response for order status history."
+      },
+      "ShippingAddress": {
+        "properties": {
+          "recipient_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Recipient Name",
+            "description": "Recipient name"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company",
+            "description": "Company name"
+          },
+          "address_line_1": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Address Line 1",
+            "description": "Primary address line"
+          },
+          "address_line_2": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line 2",
+            "description": "Secondary address line"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "City",
+            "description": "City name"
+          },
+          "state_province": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "State Province",
+            "description": "State or province"
+          },
+          "postal_code": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Postal Code",
+            "description": "ZIP or postal code"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "description": "ISO 3166-1 alpha-2 country code"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone",
+            "description": "Contact phone number"
+          },
+          "delivery_instructions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Instructions",
+            "description": "Special delivery instructions"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Address ID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_name",
+          "address_line_1",
+          "city",
+          "state_province",
+          "postal_code",
+          "country",
+          "id"
+        ],
+        "title": "ShippingAddress",
+        "description": "Shipping address with ID for responses."
+      },
+      "ShippingAddressInput": {
+        "properties": {
+          "recipient_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Recipient Name",
+            "description": "Recipient name"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company",
+            "description": "Company name"
+          },
+          "address_line_1": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Address Line 1",
+            "description": "Primary address line"
+          },
+          "address_line_2": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Line 2",
+            "description": "Secondary address line"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "City",
+            "description": "City name"
+          },
+          "state_province": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "State Province",
+            "description": "State or province"
+          },
+          "postal_code": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Postal Code",
+            "description": "ZIP or postal code"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "description": "ISO 3166-1 alpha-2 country code"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone",
+            "description": "Contact phone number"
+          },
+          "delivery_instructions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Instructions",
+            "description": "Special delivery instructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_name",
+          "address_line_1",
+          "city",
+          "state_province",
+          "postal_code",
+          "country"
+        ],
+        "title": "ShippingAddressInput",
+        "description": "Shipping address input validation."
+      },
+      "ShippingCalculateRequest": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShippingItem"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Items",
+            "description": "Items to ship"
+          },
+          "address": {
+            "$ref": "#/components/schemas/ShippingAddressInput",
+            "description": "Delivery address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "address"
+        ],
+        "title": "ShippingCalculateRequest",
+        "description": "Request for shipping cost calculation."
+      },
+      "ShippingCalculateResponse": {
+        "properties": {
+          "shipping_cost": {
+            "type": "number",
+            "title": "Shipping Cost",
+            "description": "Calculated shipping cost"
+          },
+          "shipping_tier": {
+            "type": "string",
+            "title": "Shipping Tier",
+            "description": "Shipping tier (Light, Medium, Heavy, Freight)"
+          },
+          "total_weight": {
+            "type": "number",
+            "title": "Total Weight",
+            "description": "Total weight of items"
+          },
+          "zone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone",
+            "description": "Shipping zone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shipping_cost",
+          "shipping_tier",
+          "total_weight"
+        ],
+        "title": "ShippingCalculateResponse",
+        "description": "Response for shipping cost calculation."
+      },
+      "ShippingItem": {
+        "properties": {
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Weight",
+            "description": "Item weight in pounds"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity",
+            "description": "Quantity of items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "weight",
+          "quantity"
+        ],
+        "title": "ShippingItem",
+        "description": "Item for shipping calculation."
+      },
+      "ShippingRate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Rate tier name"
+          },
+          "max_weight": {
+            "type": "number",
+            "title": "Max Weight",
+            "description": "Maximum weight for this tier"
+          },
+          "base_rate": {
+            "type": "number",
+            "title": "Base Rate",
+            "description": "Base shipping rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "max_weight",
+          "base_rate"
+        ],
+        "title": "ShippingRate",
+        "description": "Shipping rate configuration."
+      },
+      "ShippingRatesResponse": {
+        "properties": {
+          "rates": {
+            "items": {
+              "$ref": "#/components/schemas/ShippingRate"
+            },
+            "type": "array",
+            "title": "Rates",
+            "description": "Available shipping rates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rates"
+        ],
+        "title": "ShippingRatesResponse",
+        "description": "Response with available shipping rates."
+      },
+      "UpdateStatusRequest": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus",
+            "description": "New order status"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Status update notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "UpdateStatusRequest",
+        "description": "Request to update order status."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

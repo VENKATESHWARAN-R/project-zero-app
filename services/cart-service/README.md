@@ -1,6 +1,21 @@
-# Cart Service
+# Project Zero App - Cart Service
 
-Shopping cart microservice for Project Zero App. Provides cart management functionality including adding, updating, removing items, and cart persistence.
+A high-performance shopping cart microservice for the Project Zero App e-commerce platform built with Node.js and Express.
+
+## 🎯 Overview
+
+The Cart Service provides comprehensive shopping cart management functionality for the Project Zero App ecosystem. It handles cart persistence, item management, and seamless integration with product and auth services.
+
+### Key Features
+
+- **🛒 Cart Management**: Full CRUD operations for cart items with quantity management
+- **💾 Persistence**: SQLite-based cart storage with user session management
+- **🔒 Security**: JWT authentication integration with auth service
+- **🚀 High Performance**: Express.js with optimized database queries
+- **📊 Monitoring**: Health checks, structured logging, comprehensive error handling
+- **🧪 Test Coverage**: Jest-based testing with API and integration tests
+- **🐳 Cloud Ready**: Docker containerized with database migration support
+- **🔄 Microservice Architecture**: Designed for distributed systems
 
 ## Quick Start
 

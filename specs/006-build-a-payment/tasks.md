@@ -40,65 +40,65 @@
 
 ## Phase 3.1: Setup & Infrastructure
 
-- [ ] T001 Create payment service project structure at `services/payment-service/` following existing Python service pattern
-- [ ] T002 Initialize Python project with FastAPI dependencies in `services/payment-service/pyproject.toml`
-- [ ] T003 [P] Configure Docker setup with `services/payment-service/Dockerfile` and `services/payment-service/docker-compose.yml`
-- [ ] T004 [P] Set up environment configuration in `services/payment-service/.env.example`
-- [ ] T005 [P] Configure linting and formatting tools (Black, Flake8, mypy) in `services/payment-service/pyproject.toml`
-- [ ] T006 [P] Create database initialization script in `services/payment-service/src/models/database.py`
+- [x] T001 Create payment service project structure at `services/payment-service/` following existing Python service pattern
+- [x] T002 Initialize Python project with FastAPI dependencies in `services/payment-service/pyproject.toml`
+- [x] T003 [P] Configure Docker setup with `services/payment-service/Dockerfile` and `services/payment-service/docker-compose.yml`
+- [x] T004 [P] Set up environment configuration in `services/payment-service/.env.example`
+- [x] T005 [P] Configure linting and formatting tools (Black, Flake8, mypy) in `services/payment-service/pyproject.toml`
+- [x] T006 [P] Create database initialization script in `services/payment-service/src/models/database.py`
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests (from payment-api.yaml)
-- [ ] T007 [P] Contract test POST /api/v1/payments in `services/payment-service/tests/contract/test_payments_post.py`
-- [ ] T008 [P] Contract test GET /api/v1/payments in `services/payment-service/tests/contract/test_payments_get.py`
-- [ ] T009 [P] Contract test GET /api/v1/payments/{payment_id} in `services/payment-service/tests/contract/test_payment_details.py`
-- [ ] T010 [P] Contract test GET /api/v1/payments/{payment_id}/status in `services/payment-service/tests/contract/test_payment_status.py`
-- [ ] T011 [P] Contract test POST /api/v1/payment-methods in `services/payment-service/tests/contract/test_payment_methods_post.py`
-- [ ] T012 [P] Contract test GET /api/v1/payment-methods in `services/payment-service/tests/contract/test_payment_methods_get.py`
-- [ ] T013 [P] Contract test DELETE /api/v1/payment-methods/{method_id} in `services/payment-service/tests/contract/test_payment_methods_delete.py`
-- [ ] T014 [P] Contract test POST /api/v1/webhooks/payment in `services/payment-service/tests/contract/test_webhooks.py`
+- [x] T007 [P] Contract test POST /api/v1/payments in `services/payment-service/tests/contract/test_payments_post.py`
+- [x] T008 [P] Contract test GET /api/v1/payments in `services/payment-service/tests/contract/test_payments_get.py`
+- [x] T009 [P] Contract test GET /api/v1/payments/{payment_id} in `services/payment-service/tests/contract/test_payment_details.py`
+- [x] T010 [P] Contract test GET /api/v1/payments/{payment_id}/status in `services/payment-service/tests/contract/test_payment_status.py`
+- [x] T011 [P] Contract test POST /api/v1/payment-methods in `services/payment-service/tests/contract/test_payment_methods_post.py`
+- [x] T012 [P] Contract test GET /api/v1/payment-methods in `services/payment-service/tests/contract/test_payment_methods_get.py`
+- [x] T013 [P] Contract test DELETE /api/v1/payment-methods/{method_id} in `services/payment-service/tests/contract/test_payment_methods_delete.py`
+- [x] T014 [P] Contract test POST /api/v1/webhooks/payment in `services/payment-service/tests/contract/test_webhooks.py`
 
 ### Integration Tests (from quickstart.md scenarios)
-- [ ] T015 [P] Integration test successful payment flow in `services/payment-service/tests/integration/test_payment_flow.py`
-- [ ] T016 [P] Integration test payment failure scenarios in `services/payment-service/tests/integration/test_payment_failures.py`
-- [ ] T017 [P] Integration test payment method management in `services/payment-service/tests/integration/test_payment_methods.py`
-- [ ] T018 [P] Integration test webhook simulation in `services/payment-service/tests/integration/test_webhook_simulation.py`
+- [x] T015 [P] Integration test successful payment flow in `services/payment-service/tests/integration/test_payment_flow.py`
+- [x] T016 [P] Integration test payment failure scenarios in `services/payment-service/tests/integration/test_payment_failures.py`
+- [x] T017 [P] Integration test payment method management in `services/payment-service/tests/integration/test_payment_methods.py`
+- [x] T018 [P] Integration test webhook simulation in `services/payment-service/tests/integration/test_webhook_simulation.py`
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Data Models (from data-model.md)
-- [ ] T019 [P] Payment Transaction model in `services/payment-service/src/models/payment.py`
-- [ ] T020 [P] Payment Method model in `services/payment-service/src/models/payment_method.py`
-- [ ] T021 [P] Payment Status History model in `services/payment-service/src/models/payment_status_history.py`
-- [ ] T022 [P] Webhook Event model in `services/payment-service/src/models/webhook_event.py`
+- [x] T019 [P] Payment Transaction model in `services/payment-service/src/models/payment.py`
+- [x] T020 [P] Payment Method model in `services/payment-service/src/models/payment_method.py`
+- [x] T021 [P] Payment Status History model in `services/payment-service/src/models/payment_status_history.py`
+- [x] T022 [P] Webhook Event model in `services/payment-service/src/models/webhook_event.py`
 
 ### Business Logic Services
-- [ ] T023 Mock payment processor with realistic simulation in `services/payment-service/src/services/payment_processor.py`
-- [ ] T024 Payment validation service in `services/payment-service/src/services/payment_validator.py`
-- [ ] T025 Webhook simulator with async delivery in `services/payment-service/src/services/webhook_simulator.py`
+- [x] T023 Mock payment processor with realistic simulation in `services/payment-service/src/services/payment_processor.py`
+- [x] T024 Payment validation service in `services/payment-service/src/services/payment_validator.py`
+- [x] T025 Webhook simulator with async delivery in `services/payment-service/src/services/webhook_simulator.py`
 
 ### API Endpoints
-- [ ] T026 FastAPI application setup and health endpoints in `services/payment-service/src/main.py`
-- [ ] T027 Payment processing endpoints in `services/payment-service/src/api/payments.py`
-- [ ] T028 Payment method management endpoints in `services/payment-service/src/api/payment_methods.py`
-- [ ] T029 Webhook endpoints in `services/payment-service/src/api/webhooks.py`
+- [x] T026 FastAPI application setup and health endpoints in `services/payment-service/src/main.py`
+- [x] T027 Payment processing endpoints in `services/payment-service/src/api/payments.py`
+- [x] T028 Payment method management endpoints in `services/payment-service/src/api/payment_methods.py`
+- [x] T029 Webhook endpoints in `services/payment-service/src/api/webhooks.py`
 
 ## Phase 3.4: Integration & Security
 
-- [ ] T030 Auth service integration client in `services/payment-service/src/integrations/auth_service.py`
-- [ ] T031 Order service integration client in `services/payment-service/src/integrations/order_service.py`
-- [ ] T032 JWT authentication middleware and security utilities in `services/payment-service/src/utils/security.py`
+- [x] T030 Auth service integration client in `services/payment-service/src/integrations/auth_service.py`
+- [x] T031 Order service integration client in `services/payment-service/src/integrations/order_service.py`
+- [x] T032 JWT authentication middleware and security utilities in `services/payment-service/src/utils/security.py`
 
 ## Phase 3.5: Polish & Documentation
 
-- [ ] T033 [P] Unit tests for payment processor in `services/payment-service/tests/unit/test_payment_processor.py`
-- [ ] T034 [P] Unit tests for payment validator in `services/payment-service/tests/unit/test_payment_validator.py`
-- [ ] T035 [P] Unit tests for webhook simulator in `services/payment-service/tests/unit/test_webhook_simulator.py`
-- [ ] T036 [P] Performance tests for concurrent payment processing in `services/payment-service/tests/performance/test_concurrent_payments.py`
-- [ ] T037 [P] Service documentation in `services/payment-service/README.md`
-- [ ] T038 [P] Structured logging setup in `services/payment-service/src/utils/logging.py`
+- [x] T033 [P] Unit tests for payment processor in `services/payment-service/tests/unit/test_payment_processor.py`
+- [x] T034 [P] Unit tests for payment validator in `services/payment-service/tests/unit/test_payment_validator.py`
+- [x] T035 [P] Unit tests for webhook simulator in `services/payment-service/tests/unit/test_webhook_simulator.py`
+- [x] T036 [P] Performance tests for concurrent payment processing in `services/payment-service/tests/performance/test_concurrent_payments.py`
+- [x] T037 [P] Service documentation in `services/payment-service/README.md`
+- [x] T038 [P] Structured logging setup in `services/payment-service/src/utils/logging.py`
 
 ## Dependencies
 
