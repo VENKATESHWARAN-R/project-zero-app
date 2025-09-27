@@ -39,16 +39,16 @@ This application was specifically designed to:
          │                       │                       │
          └───────────────────────┼───────────────────────┘
                                  │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
+    ┌────────────────────────────┼────────────────────────────┐
+    │                           │                            │
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Order Service  │    │ Payment Service │    │   Future APIs   │
-│ FastAPI+SQLite  │    │ FastAPI+SQLite  │    │      ...        │
-│   Port 8008     │    │   Port 8009     │    │                 │
+│  Order Service  │    │ Payment Service │    │User Profile Svc │
+│ FastAPI+SQLite  │    │ FastAPI+SQLite  │    │ FastAPI+SQLite  │
+│   Port 8008     │    │   Port 8009     │    │   Port 8002     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-**Current Status**: ✅ **5 Backend Services + Frontend Implemented & Running**
+**Current Status**: ✅ **6 Backend Services + Frontend Implemented & Running**
 
 ### Service Breakdown
 
@@ -104,11 +104,13 @@ This application was specifically designed to:
 
 ## Phase 2 - Core E-commerce (Extended Functionality)
 
-### 👤 002-user-profile-service
-- **Technology**: Python/FastAPI
-- **Purpose**: User profile and account management
+### 👤 002-user-profile-service ✅
+- **Technology**: Python 3.13+ / FastAPI + SQLite
+- **Purpose**: User profile, address, and preferences management
+- **Endpoints**: `/profiles`, `/addresses`, `/preferences`, `/activity`, `/admin`
+- **Database**: User profiles, addresses, preferences, activity logs (SQLite)
 - **Port**: 8002
-- **Status**: **Planned - Ready for implementation**
+- **Status**: **Fully implemented with comprehensive profile management**
 
 ### 🌉 015-api-gateway
 - **Technology**: Go/Gin

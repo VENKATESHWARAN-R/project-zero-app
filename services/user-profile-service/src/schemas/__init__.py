@@ -1,0 +1,1 @@
+# Schema modules for the User Profile Service

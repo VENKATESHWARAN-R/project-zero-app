@@ -35,65 +35,65 @@
 - **Tests**: `services/user-profile-service/tests/`
 
 ## Phase 3.1: Setup and Project Initialization
-- [ ] T001 Create user-profile-service directory structure at services/user-profile-service/
-- [ ] T002 Initialize Python project with uv and create pyproject.toml with FastAPI dependencies
-- [ ] T003 [P] Configure linting and formatting with ruff in services/user-profile-service/.ruff.toml
-- [ ] T004 [P] Create environment configuration in services/user-profile-service/.env.example
-- [ ] T005 [P] Create Dockerfile following auth-service pattern in services/user-profile-service/Dockerfile
+- [X] T001 Create user-profile-service directory structure at services/user-profile-service/
+- [X] T002 Initialize Python project with uv and create pyproject.toml with FastAPI dependencies
+- [X] T003 [P] Configure linting and formatting with ruff in services/user-profile-service/.ruff.toml
+- [X] T004 [P] Create environment configuration in services/user-profile-service/.env.example
+- [X] T005 [P] Create Dockerfile following auth-service pattern in services/user-profile-service/Dockerfile
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T006 [P] Contract test for health endpoints in services/user-profile-service/tests/contract/test_health.py
-- [ ] T007 [P] Contract test for profile CRUD endpoints in services/user-profile-service/tests/contract/test_profiles.py
-- [ ] T008 [P] Contract test for address management endpoints in services/user-profile-service/tests/contract/test_addresses.py
-- [ ] T009 [P] Contract test for preferences endpoints in services/user-profile-service/tests/contract/test_preferences.py
-- [ ] T010 [P] Contract test for activity log endpoints in services/user-profile-service/tests/contract/test_activity.py
-- [ ] T011 [P] Contract test for admin endpoints in services/user-profile-service/tests/contract/test_admin.py
-- [ ] T012 [P] Integration test for profile creation flow in services/user-profile-service/tests/integration/test_profile_creation.py
-- [ ] T013 [P] Integration test for address management in services/user-profile-service/tests/integration/test_address_management.py
-- [ ] T014 [P] Integration test for auth service integration in services/user-profile-service/tests/integration/test_auth_integration.py
+- [X] T006 [P] Contract test for health endpoints in services/user-profile-service/tests/contract/test_health.py
+- [X] T007 [P] Contract test for profile CRUD endpoints in services/user-profile-service/tests/contract/test_profiles.py
+- [X] T008 [P] Contract test for address management endpoints in services/user-profile-service/tests/contract/test_addresses.py
+- [X] T009 [P] Contract test for preferences endpoints in services/user-profile-service/tests/contract/test_preferences.py
+- [X] T010 [P] Contract test for activity log endpoints in services/user-profile-service/tests/contract/test_activity.py
+- [X] T011 [P] Contract test for admin endpoints in services/user-profile-service/tests/contract/test_admin.py
+- [X] T012 [P] Integration test for profile creation flow in services/user-profile-service/tests/integration/test_profile_creation.py
+- [X] T013 [P] Integration test for address management in services/user-profile-service/tests/integration/test_address_management.py
+- [X] T014 [P] Integration test for auth service integration in services/user-profile-service/tests/integration/test_auth_integration.py
 
 ## Phase 3.3: Core Database Models (ONLY after tests are failing)
-- [ ] T015 [P] UserProfile model in services/user-profile-service/src/models/user_profile.py
-- [ ] T016 [P] Address model in services/user-profile-service/src/models/address.py
-- [ ] T017 [P] UserPreferences model in services/user-profile-service/src/models/user_preferences.py
-- [ ] T018 [P] ActivityLog model in services/user-profile-service/src/models/activity_log.py
-- [ ] T019 Database configuration and session management in services/user-profile-service/src/database.py
-- [ ] T020 Database initialization and migration utilities in services/user-profile-service/src/models/__init__.py
+- [X] T015 [P] UserProfile model in services/user-profile-service/src/models/user_profile.py
+- [X] T016 [P] Address model in services/user-profile-service/src/models/address.py
+- [X] T017 [P] UserPreferences model in services/user-profile-service/src/models/user_preferences.py
+- [X] T018 [P] ActivityLog model in services/user-profile-service/src/models/activity_log.py
+- [X] T019 Database configuration and session management in services/user-profile-service/src/database.py
+- [X] T020 Database initialization and migration utilities in services/user-profile-service/src/models/__init__.py
 
 ## Phase 3.4: Pydantic Schemas and Validation
-- [ ] T021 [P] Profile request/response schemas in services/user-profile-service/src/schemas/profile.py
-- [ ] T022 [P] Address request/response schemas in services/user-profile-service/src/schemas/address.py
-- [ ] T023 [P] Preferences request/response schemas in services/user-profile-service/src/schemas/preferences.py
-- [ ] T024 [P] Activity log response schemas in services/user-profile-service/src/schemas/activity.py
-- [ ] T025 [P] Health check schemas in services/user-profile-service/src/schemas/health.py
-- [ ] T026 [P] Error response schemas in services/user-profile-service/src/schemas/error.py
+- [X] T021 [P] Profile request/response schemas in services/user-profile-service/src/schemas/profile.py
+- [X] T022 [P] Address request/response schemas in services/user-profile-service/src/schemas/address.py
+- [X] T023 [P] Preferences request/response schemas in services/user-profile-service/src/schemas/preferences.py
+- [X] T024 [P] Activity log response schemas in services/user-profile-service/src/schemas/activity.py
+- [X] T025 [P] Health check schemas in services/user-profile-service/src/schemas/health.py
+- [X] T026 [P] Error response schemas in services/user-profile-service/src/schemas/error.py
 
 ## Phase 3.5: Service Layer Implementation
-- [ ] T027 [P] UserProfile service with CRUD operations in services/user-profile-service/src/services/profile_service.py
-- [ ] T028 [P] Address service with validation and default handling in services/user-profile-service/src/services/address_service.py
-- [ ] T029 [P] UserPreferences service in services/user-profile-service/src/services/preferences_service.py
-- [ ] T030 [P] ActivityLog service for audit trail in services/user-profile-service/src/services/activity_service.py
-- [ ] T031 Auth service integration client in services/user-profile-service/src/services/auth_service.py
+- [X] T027 [P] UserProfile service with CRUD operations in services/user-profile-service/src/services/profile_service.py
+- [X] T028 [P] Address service with validation and default handling in services/user-profile-service/src/services/address_service.py
+- [X] T029 [P] UserPreferences service in services/user-profile-service/src/services/preferences_service.py
+- [X] T030 [P] ActivityLog service for audit trail in services/user-profile-service/src/services/activity_service.py
+- [X] T031 Auth service integration client in services/user-profile-service/src/services/auth_service.py
 
 ## Phase 3.6: API Endpoints Implementation
-- [ ] T032 [P] Health check endpoints in services/user-profile-service/src/routers/health.py
-- [ ] T033 Profile management endpoints in services/user-profile-service/src/routers/profiles.py
-- [ ] T034 Address management endpoints in services/user-profile-service/src/routers/addresses.py
-- [ ] T035 Preferences endpoints in services/user-profile-service/src/routers/preferences.py
-- [ ] T036 Activity log endpoints in services/user-profile-service/src/routers/activity.py
-- [ ] T037 [P] Admin endpoints in services/user-profile-service/src/routers/admin.py
+- [X] T032 [P] Health check endpoints in services/user-profile-service/src/routers/health.py
+- [X] T033 Profile management endpoints in services/user-profile-service/src/routers/profiles.py
+- [X] T034 Address management endpoints in services/user-profile-service/src/routers/addresses.py
+- [X] T035 Preferences endpoints in services/user-profile-service/src/routers/preferences.py
+- [X] T036 Activity log endpoints in services/user-profile-service/src/routers/activity.py
+- [X] T037 [P] Admin endpoints in services/user-profile-service/src/routers/admin.py
 
 ## Phase 3.7: Authentication and Middleware Integration
-- [ ] T038 JWT authentication dependency in services/user-profile-service/src/auth/jwt_auth.py
-- [ ] T039 CORS and security middleware configuration in services/user-profile-service/src/middleware.py
-- [ ] T040 Request correlation ID middleware in services/user-profile-service/src/middleware/correlation.py
-- [ ] T041 Error handling middleware in services/user-profile-service/src/middleware/error_handler.py
+- [X] T038 JWT authentication dependency in services/user-profile-service/src/auth/jwt_auth.py
+- [X] T039 CORS and security middleware configuration in services/user-profile-service/src/middleware.py
+- [X] T040 Request correlation ID middleware in services/user-profile-service/src/middleware/correlation.py
+- [X] T041 Error handling middleware in services/user-profile-service/src/middleware/error_handler.py
 
 ## Phase 3.8: Application Configuration and Main Module
-- [ ] T042 Environment configuration management in services/user-profile-service/src/config.py
-- [ ] T043 FastAPI application setup and router registration in services/user-profile-service/src/app.py
-- [ ] T044 Main application entry point in services/user-profile-service/main.py
+- [X] T042 Environment configuration management in services/user-profile-service/src/config.py
+- [X] T043 FastAPI application setup and router registration in services/user-profile-service/src/app.py
+- [X] T044 Main application entry point in services/user-profile-service/main.py
 
 ## Phase 3.9: Testing and Quality Assurance
 - [ ] T045 [P] Unit tests for profile service in services/user-profile-service/tests/unit/test_profile_service.py
@@ -104,22 +104,22 @@
 - [ ] T050 Run all tests and ensure 80%+ coverage verification
 
 ## Phase 3.10: Docker and Container Integration
-- [ ] T051 Build and test Docker container for user-profile-service
-- [ ] T052 Add user-profile-service to root docker-compose.yml with proper networking
-- [ ] T053 Verify service health checks work in containerized environment
-- [ ] T054 Test service integration with auth-service via docker-compose
+- [X] T051 Build and test Docker container for user-profile-service
+- [X] T052 Add user-profile-service to root docker-compose.yml with proper networking
+- [X] T053 Verify service health checks work in containerized environment
+- [X] T054 Test service integration with auth-service via docker-compose
 
 ## Phase 3.11: Documentation and API Verification
-- [ ] T055 Verify Swagger/OpenAPI documentation is properly generated at /docs endpoint
-- [ ] T056 Test interactive API documentation accessibility and accuracy
-- [ ] T057 Create service-specific README.md in services/user-profile-service/
-- [ ] T058 Update root README.md with user-profile-service information and port details
+- [X] T055 Verify Swagger/OpenAPI documentation is properly generated at /docs endpoint
+- [X] T056 Test interactive API documentation accessibility and accuracy
+- [X] T057 Create service-specific README.md in services/user-profile-service/
+- [X] T058 Update root README.md with user-profile-service information and port details
 
 ## Phase 3.12: Final Integration and Performance Testing
-- [ ] T059 Run performance tests to ensure <200ms response times for profile operations
-- [ ] T060 Execute all quickstart test scenarios from specs/007-build-a-user/quickstart.md
-- [ ] T061 Verify auth service integration with token validation and user extraction
-- [ ] T062 Final lint and format check with ruff
+- [X] T059 Run performance tests to ensure <200ms response times for profile operations
+- [X] T060 Execute all quickstart test scenarios from specs/007-build-a-user/quickstart.md
+- [X] T061 Verify auth service integration with token validation and user extraction
+- [X] T062 Final lint and format check with ruff
 
 ## Dependencies
 - **Setup before Tests**: T001-T005 before T006-T014

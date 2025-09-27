@@ -174,6 +174,46 @@ services:
         - action: rebuild
           path: ./services/order-service/Dockerfile
 
+  user-profile-service:
+    build:
+      context: ./services/user-profile-service
+      dockerfile: Dockerfile
+    image: project-zero-user-profile
+    ports:
+      - "8002:8002"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8002
+      DEBUG: false
+      DATABASE_URL: sqlite:///./data/user_profile_service.db
+      JWT_SECRET_KEY: dev-secret-key-change-in-prod
+      AUTH_SERVICE_URL: http://auth-service:8001
+      LOG_LEVEL: INFO
+      ENVIRONMENT: development
+    volumes:
+      - user_profile_data:/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/user-profile-service/src
+        - action: rebuild
+          path: ./services/user-profile-service/main.py
+        - action: rebuild
+          path: ./services/user-profile-service/pyproject.toml
+        - action: rebuild
+          path: ./services/user-profile-service/Dockerfile
+
   payment-service:
     build:
       context: ./services/payment-service
@@ -239,12 +279,14 @@ services:
       NEXT_PUBLIC_CART_API_URL: http://localhost:8007
       NEXT_PUBLIC_ORDER_API_URL: http://localhost:8008
       NEXT_PUBLIC_PAYMENT_API_URL: http://localhost:8009
+      NEXT_PUBLIC_USER_PROFILE_API_URL: http://localhost:8002
       # Server-side API URLs (container accessible)
       AUTH_API_URL: http://auth-service:8001
       PRODUCTS_API_URL: http://product-service:8004
       CART_API_URL: http://cart-service:8007
       ORDER_API_URL: http://order-service:8008
       PAYMENT_API_URL: http://payment-service:8009
+      USER_PROFILE_API_URL: http://user-profile-service:8002
       NEXT_PUBLIC_APP_NAME: Project Zero Store
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
@@ -258,6 +300,8 @@ services:
       order-service:
         condition: service_healthy
       payment-service:
+        condition: service_healthy
+      user-profile-service:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -329,5 +373,6 @@ volumes:
   cart_data:
   order_data:
   payment_data:
+  user_profile_data:
   postgres_data:
   redis_data:
