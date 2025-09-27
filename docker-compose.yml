@@ -1,4 +1,61 @@
 services:
+  api-gateway:
+    build:
+      context: ./services/api-gateway-service
+      dockerfile: Dockerfile
+    image: project-zero-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      SERVER_PORT: 8000
+      SERVER_HOST: 0.0.0.0
+      AUTH_SERVICE_URL: http://auth-service:8001
+      PRODUCT_SERVICE_URL: http://product-service:8004
+      CART_SERVICE_URL: http://cart-service:8007
+      ORDER_SERVICE_URL: http://order-service:8008
+      PAYMENT_SERVICE_URL: http://payment-service:8009
+      USER_PROFILE_SERVICE_URL: http://user-profile-service:8002
+      RATE_LIMIT_REQUESTS: 100
+      RATE_LIMIT_WINDOW: 1m
+      RATE_LIMIT_BURST: 200
+      CIRCUIT_BREAKER_FAILURE_THRESHOLD: 0.6
+      LOGGING_LEVEL: info
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      cart-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      user-profile-service:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "/app/gateway", "--health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/api-gateway-service/cmd
+        - action: rebuild
+          path: ./services/api-gateway-service/internal
+        - action: rebuild
+          path: ./services/api-gateway-service/config
+        - action: rebuild
+          path: ./services/api-gateway-service/go.mod
+        - action: rebuild
+          path: ./services/api-gateway-service/go.sum
+        - action: rebuild
+          path: ./services/api-gateway-service/Dockerfile
+
   auth-service:
     build:
       context: ./services/auth-service

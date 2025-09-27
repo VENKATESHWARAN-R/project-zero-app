@@ -25,20 +25,43 @@ Core Objectives:
 ## 2. High-Level Architecture (Current Snapshot)
 
 ```text
-Frontend (Planned) ──► API Gateway (Planned, Go)
+Frontend (Planned) ──► API Gateway (Active, Go)
                                                      │
                                                      ├── Auth Service (Active, FastAPI)
                                                      ├── Order Service (Active, FastAPI)
-                                                     ├── Product Catalog (Planned)
-                                                     ├── Cart (Planned)
-                                                     ├── Payment (Planned)
-                                                     ├── User Profile (Planned)
+                                                     ├── User Profile Service (Active, FastAPI)
+                                                     ├── Product Catalog (Active, FastAPI)
+                                                     ├── Cart Service (Active, Node.js)
+                                                     ├── Payment Service (Active, FastAPI)
                                                      └── Notification (Planned)
 ```
 
 Foundational Infra (incremental): Docker, future Kubernetes (GKE), Terraform (GCP), PostgreSQL (primary RDBMS), Redis (caching/session/token blacklist), structured logging.
 
 ## 3. Active Services
+
+### API Gateway Service
+
+Purpose: Single entry point for all client requests to the Project Zero App platform. Provides intelligent request routing, authentication middleware, rate limiting, circuit breaking, and observability for the microservices ecosystem.
+
+Responsibilities (In-Scope Now):
+
+- Request routing to backend microservices (auth:8001, profile:8002, products:8004, cart:8007, orders:8008, payments:8009)
+- JWT authentication middleware with central auth service integration
+- Rate limiting using token bucket algorithm (configurable per-IP, per-user, or global)
+- Circuit breaker patterns for resilience and automatic failure detection
+- Service discovery with health checks for all registered services
+- CORS support for cross-origin requests
+- Structured JSON logging with correlation IDs for distributed tracing
+- Graceful shutdown handling and resource cleanup
+
+Out of Scope (Until Explicitly Planned):
+
+- Load balancing algorithms beyond round-robin
+- Advanced routing features (path rewriting, request transformation)
+- OAuth2/OIDC integration beyond JWT validation
+- API versioning and backward compatibility
+- Advanced observability (Prometheus metrics, distributed tracing)
 
 ### Auth Service
 
@@ -84,6 +107,26 @@ Out of Scope (Until Explicitly Planned):
 
 ## 4. API Surface
 
+### API Gateway Service
+
+Implemented:
+
+- GET `/health` – Gateway health check
+- GET `/health/ready` – Gateway readiness check including dependency health
+- GET `/gateway/services` – List registered services with health status
+- GET `/gateway/routes` – List configured routing rules
+- GET `/gateway/metrics` – Performance and usage metrics
+- ANY `/api/*` – Proxy routing to backend services based on path patterns
+
+Routing Configuration:
+
+- `/api/auth/*` → Auth Service (no authentication required)
+- `/api/profile/*` → User Profile Service (authentication required)
+- `/api/products/*` → Product Catalog Service (no authentication required)
+- `/api/cart/*` → Cart Service (authentication required)
+- `/api/orders/*` → Order Service (authentication required)
+- `/api/payments/*` → Payment Service (authentication required)
+
 ### Auth Service
 
 Implemented:
@@ -121,6 +164,19 @@ Response & error formats follow FastAPI / Pydantic conventions with JSON bodies 
 
 ## 5. Environment Variables
 
+### API Gateway Service
+
+| Name | Purpose | Typical Value (Dev) | Required | Notes |
+|------|---------|---------------------|----------|-------|
+| `GATEWAY_SERVER_HOST` | Bind address | `0.0.0.0` | No | Set explicitly in containers |
+| `GATEWAY_SERVER_PORT` | Service port | `8000` | No | Main entry point for all requests |
+| `GATEWAY_AUTH_SERVICE_URL` | Auth service URL | `http://localhost:8001` | Yes | Used for JWT token validation |
+| `GATEWAY_RATE_LIMIT_REQUESTS` | Requests per window | `100` | No | Rate limiting threshold |
+| `GATEWAY_RATE_LIMIT_WINDOW` | Rate limit window | `1m` | No | Time window for rate limiting |
+| `GATEWAY_RATE_LIMIT_BURST` | Burst capacity | `200` | No | Maximum burst requests allowed |
+| `GATEWAY_CIRCUIT_BREAKER_FAILURE_THRESHOLD` | Failure threshold | `0.6` | No | Circuit breaker trigger ratio |
+| `GATEWAY_LOGGING_LEVEL` | Log level | `info` | No | debug, info, warn, error |
+
 ### Auth Service
 
 | Name | Purpose | Typical Value (Dev) | Required | Notes |
@@ -150,6 +206,35 @@ Response & error formats follow FastAPI / Pydantic conventions with JSON bodies 
 If adding new environment variables: (1) update this table, (2) update respective service README, (3) ensure tests reflect new configuration.
 
 ## 6. Local Development
+
+### API Gateway Service
+
+Prerequisites: Go 1.20+, Docker (optional).
+
+Quick Start:
+
+```bash
+cd services/api-gateway-service
+go mod tidy
+go build -o gateway ./cmd/gateway
+./gateway
+# Visit: http://localhost:8000/health
+```
+
+Run Tests:
+
+```bash
+go test ./...                           # all tests
+go test ./tests/contract/...            # contract tests
+go test -cover ./...                    # with coverage
+```
+
+Lint & Format:
+
+```bash
+gofmt -w .
+golangci-lint run
+```
 
 ### Auth Service
 

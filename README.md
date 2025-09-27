@@ -29,6 +29,13 @@ This application was specifically designed to:
          │                       │                       │
          └───────────────────────┼───────────────────────┘
                                  │
+    ┌─────────────────────────────┼─────────────────────────────┐
+    │           ┌─────────────────┼─────────────────┐           │
+    │           │   API Gateway   │                 │           │
+    │           │    (Go/Gin)     │                 │           │
+    │           │   Port 8000     │                 │           │
+    │           └─────────────────┼─────────────────┘           │
+    │                            │                             │
     ┌────────────────────────────┼────────────────────────────┐
     │                           │                            │
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -48,7 +55,7 @@ This application was specifically designed to:
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-**Current Status**: ✅ **6 Backend Services + Frontend Implemented & Running**
+**Current Status**: ✅ **7 Backend Services + API Gateway + Frontend Implemented & Running**
 
 ### Service Breakdown
 
@@ -112,11 +119,13 @@ This application was specifically designed to:
 - **Port**: 8002
 - **Status**: **Fully implemented with comprehensive profile management**
 
-### 🌉 015-api-gateway
-- **Technology**: Go/Gin
-- **Purpose**: Request routing, rate limiting, authentication
+### 🌉 015-api-gateway ✅
+- **Technology**: Go/Gin with Viper configuration
+- **Purpose**: Request routing, rate limiting, circuit breaking, authentication proxy
+- **Endpoints**: `/health`, `/health/ready`, `/gateway/services`, `/gateway/routes`, `/gateway/metrics`, `/api/*`
+- **Features**: Service discovery, health monitoring, CORS support, structured logging
 - **Port**: 8000
-- **Status**: **Planned - Ready for implementation**
+- **Status**: **Fully implemented with service registry and middleware**
 
 ## Phase 3 - Enhanced Features
 
@@ -308,21 +317,26 @@ project-zero-app/
 4. **Verify services are running**
    ```bash
    # Health checks for all services
+   curl http://localhost:8000/health  # API Gateway
    curl http://localhost:8001/health  # Auth Service
    curl http://localhost:8004/health  # Product Service
    curl http://localhost:8007/health  # Cart Service
    curl http://localhost:8008/health  # Order Service
    curl http://localhost:8009/health  # Payment Service
+   curl http://localhost:8002/health  # User Profile Service
    ```
 
 5. **Access the application**
    - **Frontend Application**: http://localhost:3000 ✅
-   - **API Documentation**: 
+   - **API Gateway**: http://localhost:8000 (Entry point for all API requests)
+   - **API Documentation**:
+     - API Gateway: http://localhost:8000/gateway/services (Service registry)
      - Auth Service: http://localhost:8001/docs
      - Product Service: http://localhost:8004/docs
      - Cart Service: http://localhost:8007/docs (if available)
      - Order Service: http://localhost:8008/docs
      - Payment Service: http://localhost:8009/docs
+     - User Profile Service: http://localhost:8002/docs
    - **Individual services**: http://localhost:800X
 
 ### Environment Configuration
