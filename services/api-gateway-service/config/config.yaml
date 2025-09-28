@@ -8,42 +8,49 @@ server:
 services:
   auth:
     name: "auth-service"
-    url: "http://localhost:8001"
+    url: "http://auth-service:8001"
     timeout: "30s"
     health_path: "/health"
     enabled: true
 
   profile:
     name: "profile-service"
-    url: "http://localhost:8002"
+    url: "http://user-profile-service:8002"
     timeout: "30s"
     health_path: "/health"
     enabled: true
 
   products:
     name: "product-service"
-    url: "http://localhost:8004"
+    url: "http://product-service:8004"
     timeout: "30s"
     health_path: "/health"
     enabled: true
 
   cart:
     name: "cart-service"
-    url: "http://localhost:8007"
+    url: "http://cart-service:8007"
     timeout: "30s"
     health_path: "/health"
     enabled: true
 
   orders:
     name: "order-service"
-    url: "http://localhost:8008"
+    url: "http://order-service:8008"
     timeout: "30s"
     health_path: "/health"
     enabled: true
 
   payments:
     name: "payment-service"
-    url: "http://localhost:8009"
+    url: "http://payment-service:8009"
+    timeout: "30s"
+    health_path: "/health"
+    enabled: true
+
+  notifications:
+    name: "notification-service"
+    url: "http://notification-service:8011"
     timeout: "30s"
     health_path: "/health"
     enabled: true
@@ -79,6 +86,11 @@ routes:
     strip_prefix: false
     auth_required: true
 
+  - path: "/api/notifications/*"
+    service_name: "notifications"
+    strip_prefix: false
+    auth_required: true
+
 rate_limit:
   name: "default"
   requests: 100
@@ -94,7 +106,7 @@ circuit_breaker:
   failure_threshold: 0.6
 
 auth:
-  service_url: "http://localhost:8001"
+  service_url: "http://auth-service:8001"
   timeout: "5s"
   cache_ttl: "5m"
   skip_paths:

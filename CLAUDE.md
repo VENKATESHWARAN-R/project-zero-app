@@ -9,11 +9,11 @@ If you (Claude) modify code, you MUST update impacted service README(s) and this
 
 # Project Zero App – Core Background & AI Collaboration Guide
 
-Last Updated: 2025-09-25
+Last Updated: 2025-09-28
 
 ## 1. Project Background
 
-Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. Active services include a hardened Authentication Service (Auth Service) for identity and token lifecycle management, and an Order Processing Service (Order Service) handling complete order workflows from cart checkout to delivery.
+Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. Active services include a hardened Authentication Service (Auth Service) for identity and token lifecycle management, an Order Processing Service (Order Service) handling complete order workflows from cart checkout to delivery, and a Notification Service managing all user communications via email, SMS, and in-app channels.
 
 Core Objectives:
 
@@ -33,7 +33,7 @@ Frontend (Planned) ──► API Gateway (Active, Go)
                                                      ├── Product Catalog (Active, FastAPI)
                                                      ├── Cart Service (Active, Node.js)
                                                      ├── Payment Service (Active, FastAPI)
-                                                     └── Notification (Planned)
+                                                     └── Notification Service (Active, Node.js)
 ```
 
 Foundational Infra (incremental): Docker, future Kubernetes (GKE), Terraform (GCP), PostgreSQL (primary RDBMS), Redis (caching/session/token blacklist), structured logging.
@@ -105,6 +105,30 @@ Out of Scope (Until Explicitly Planned):
 - Order fulfillment automation
 - Inventory reservation
 
+### Notification Service
+
+Purpose: Comprehensive communication hub for all user notifications in the Project Zero App ecosystem. Handles multi-channel notifications (email, SMS, in-app), template management, user preferences, and scheduled delivery for order confirmations, welcome messages, payment confirmations, and system alerts.
+
+Responsibilities (In-Scope Now):
+
+- Multi-channel notification delivery (email, SMS, in-app) with mock providers
+- Template-based notification system with variable substitution
+- Immediate and scheduled notification delivery with retry logic
+- User notification preference management with granular controls
+- Notification history and audit trail for all communications
+- JWT authentication integration with auth service
+- RESTful API for notification triggering from other services
+- Health monitoring and readiness checks with dependency validation
+
+Out of Scope (Until Explicitly Planned):
+
+- Real email/SMS provider integration (Sendgrid, Twilio)
+- Advanced notification batching and bulk operations
+- Real-time push notifications and WebSocket integration
+- Notification analytics and delivery tracking
+- A/B testing for notification content
+- Rich media notifications (images, attachments)
+
 ## 4. API Surface
 
 ### API Gateway Service
@@ -126,6 +150,7 @@ Routing Configuration:
 - `/api/cart/*` → Cart Service (authentication required)
 - `/api/orders/*` → Order Service (authentication required)
 - `/api/payments/*` → Payment Service (authentication required)
+- `/api/notifications/*` → Notification Service (authentication required)
 
 ### Auth Service
 
@@ -161,6 +186,26 @@ Implemented:
 - GET `/health/ready` – Readiness check with dependencies
 
 Response & error formats follow FastAPI / Pydantic conventions with JSON bodies and standard HTTP status codes (200 / 401 / 422 / 429 / 500). Rate limiting surfaces 429 with a retry message.
+
+### Notification Service
+
+Implemented:
+
+- POST `/notifications` – Send immediate notification to user
+- GET `/notifications` – Get user notification history (paginated, filtered)
+- GET `/notifications/{id}` – Get specific notification details
+- POST `/notifications/schedule` – Schedule notification for future delivery
+- POST `/notifications/template` – Send notification using predefined template
+- GET `/templates` – List available notification templates (filtered)
+- POST `/templates` – Create new notification template (admin only)
+- GET `/templates/{id}` – Get template details and variables
+- PUT `/templates/{id}` – Update existing template (admin only)
+- GET `/preferences` – Get user notification preferences
+- PUT `/preferences` – Update user notification preferences
+- GET `/health` – Basic health check
+- GET `/health/ready` – Readiness check with auth service connectivity
+
+Response & error formats follow Express.js conventions with JSON bodies and standard HTTP status codes (200 / 401 / 422 / 429 / 500). Rate limiting surfaces 429 with retry-after headers. Authentication required for all endpoints except health checks.
 
 ## 5. Environment Variables
 
@@ -202,6 +247,19 @@ Response & error formats follow FastAPI / Pydantic conventions with JSON bodies 
 | `TAX_RATE` | Fixed tax rate | `0.085` (8.5%) | No | Applied to order subtotal |
 | `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
 | `PORT` | Service port | `8008` | No | Exposed internally via gateway |
+
+### Notification Service
+
+| Name | Purpose | Typical Value (Dev) | Required | Notes |
+|------|---------|---------------------|----------|-------|
+| `DATABASE_URL` | SQLite database URL | `sqlite:///notification_service.db` | No | Use PostgreSQL in prod (`postgresql://user:pass@host:5432/db`) |
+| `AUTH_SERVICE_URL` | Auth service URL | `http://localhost:8001` | Yes | Used for JWT token verification |
+| `USER_PROFILE_SERVICE_URL` | User profile service URL | `http://localhost:8002` | No | Used for user contact information |
+| `JWT_SECRET_KEY` | HMAC secret for JWT verification (must match auth service) | Auto-generated | Recommended | Provide strong 256-bit value in prod |
+| `NODE_ENV` | Environment mode | `development` | No | Controls features and logging |
+| `LOG_LEVEL` | Logging verbosity | `info` | No | debug, info, warn, error |
+| `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
+| `PORT` | Service port | `8011` | No | Exposed internally via gateway |
 
 If adding new environment variables: (1) update this table, (2) update respective service README, (3) ensure tests reflect new configuration.
 
@@ -306,6 +364,44 @@ uv run ruff check .
 uv run ruff format .
 ```
 
+### Notification Service
+
+Prerequisites: Node.js 18+, npm installed, optional Docker.
+
+Quick Start:
+
+```bash
+cd services/notification-service
+npm install                             # install deps
+npm run dev                            # start with nodemon
+# Visit: http://localhost:8011/health
+# Visit: http://localhost:8011/docs
+```
+
+Using SQLite (default) requires no extra setup. For PostgreSQL:
+
+```bash
+export DATABASE_URL=postgresql://notificationuser:pass@localhost:5432/notificationdb
+export AUTH_SERVICE_URL=http://localhost:8001
+npm start
+```
+
+Run Tests:
+
+```bash
+npm test                               # all tests
+npm run test:contract                  # contract tests
+npm run test:coverage                  # with coverage
+```
+
+Lint & Format:
+
+```bash
+npm run lint                           # check code quality
+npm run lint:fix                       # auto-fix issues
+npm run format                         # format code
+```
+
 ## 7. Docker Packaging & Execution
 
 ### Auth Service
@@ -380,6 +476,42 @@ docker run --rm -p 8008:8008 --network project-zero-net \
 
 Health Check: `curl http://localhost:8008/health`
 
+### Notification Service
+
+Build Image:
+
+```bash
+cd services/notification-service
+docker build -t notification-service:latest .
+```
+
+Run Container (ephemeral SQLite):
+
+```bash
+docker run -p 8011:8011 \
+    -e AUTH_SERVICE_URL="http://host.docker.internal:8001" \
+    -e USER_PROFILE_SERVICE_URL="http://host.docker.internal:8002" \
+    notification-service:latest
+```
+
+Run with PostgreSQL:
+
+```bash
+docker network create project-zero-net || true
+docker run -d --name notification-db --network project-zero-net \
+    -e POSTGRES_DB=notificationdb -e POSTGRES_USER=notificationuser -e POSTGRES_PASSWORD=notificationpass \
+    postgres:15
+
+docker run --rm -p 8011:8011 --network project-zero-net \
+    -e DATABASE_URL=postgresql://notificationuser:notificationpass@notification-db:5432/notificationdb \
+    -e AUTH_SERVICE_URL="http://auth-service:8001" \
+    -e USER_PROFILE_SERVICE_URL="http://user-profile-service:8002" \
+    -e NODE_ENV="production" \
+    notification-service:latest
+```
+
+Health Check: `curl http://localhost:8011/health`
+
 ## 8. Service Dependencies & External Interactions
 
 ### Auth Service
@@ -408,6 +540,21 @@ Outbound Calls:
 - Product Service for product validation (when implemented)
 
 When adding new outbound integrations, document: (a) target base URL / discovery mechanism, (b) request contract, (c) failure handling & timeout policy, (d) retry/backoff strategy.
+
+### Notification Service
+
+External Dependencies:
+- Database: SQLite (dev) / PostgreSQL (planned prod)
+- Auth Service: JWT token verification via `GET /auth/verify`
+- User Profile Service: User contact information and preferences (optional graceful degradation)
+
+Incoming Callers: Order Service, Payment Service, and other services will call notification endpoints to trigger user communications.
+
+Outbound Calls:
+- Auth Service for JWT token validation (required)
+- User Profile Service for user contact information (optional with graceful fallback)
+
+The service implements graceful degradation when external services are unavailable, maintaining core notification functionality even when user profile service is down.
 
 ## 9. AI Assistant (Claude) Contribution Protocol
 
@@ -472,7 +619,7 @@ Do not expand here until activated. Each future service will replicate documenta
 - Cart: Session-based cart aggregation
 - Payment: Payment intent capture (mock or gateway integration)
 - User Profile: Non-auth user data (addresses, preferences)
-- Notification: Email/SMS/Webhook delivery
+- ~~Notification: Email/SMS/Webhook delivery~~ (COMPLETED)
 
 ## 13. Quick Reference Commands
 
@@ -502,6 +649,25 @@ docker run -p 8008:8008 order-service:latest
 
 # Order service health probe
 curl -s http://localhost:8008/health | jq '.'
+
+# Notification service dev
+cd services/notification-service && npm install && npm run dev
+
+# Tests & coverage
+npm test && npm run test:coverage
+
+# Lint & format
+npm run lint && npm run format
+
+# Docker build & run notification service
+docker build -t notification-service:latest services/notification-service
+docker run -p 8011:8011 -e AUTH_SERVICE_URL=http://host.docker.internal:8001 notification-service:latest
+
+# Notification service health probe
+curl -s http://localhost:8011/health | jq '.'
+
+# Test notification API
+curl -s http://localhost:8011/docs
 ```
 
 ## 14. Changelog (High-Level)
@@ -510,6 +676,7 @@ curl -s http://localhost:8008/health | jq '.'
 |------|--------|
 | 2025-09-23 | Initial condensed CLAUDE.md authored; established AI protocol |
 | 2025-09-25 | Order Processing Service implemented with complete order lifecycle management, tax/shipping calculation, status tracking, and microservice integrations |
+| 2025-09-28 | Notification Service implemented with multi-channel communications (email, SMS, in-app), template management, user preferences, scheduled delivery, and comprehensive API documentation |
 
 ---
 Maintain this file as a compact operational contract. If it becomes bloated, refactor detail into service-specific READMEs or specs and relink.
