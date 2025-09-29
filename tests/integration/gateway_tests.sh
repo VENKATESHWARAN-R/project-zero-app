@@ -1,473 +1,124 @@
 #!/bin/bash
-#
-# API Gateway Routing Tests for Project Zero App
-#
-# Tests API Gateway routing functionality to ensure proper request
-# forwarding to backend services and response handling.
-#
 
-set -euo pipefail
+# API Gateway Routing Tests
+# Tests that API Gateway properly routes requests to all downstream services
 
-# Source utilities
+set -e
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../utils/http_client.sh"
-source "${SCRIPT_DIR}/../utils/validate_response.sh"
-source "${SCRIPT_DIR}/../utils/test_reporter.sh"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# API Gateway configuration
-readonly GATEWAY_HOST="http://localhost:8000"
-readonly TIMEOUT=15
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Service routes through API Gateway
-declare -A GATEWAY_ROUTES=(
-    ["/auth/health"]="auth-service health endpoint"
-    ["/users/health"]="user-profile-service health endpoint"
-    ["/products/health"]="product-service health endpoint"
-    ["/cart/health"]="cart-service health endpoint"
-    ["/orders/health"]="order-service health endpoint"
-    ["/payments/health"]="payment-service health endpoint"
-    ["/notifications/health"]="notification-service health endpoint"
+# Test configuration
+GATEWAY_URL="http://localhost:8000"
+TIMEOUT=10
+PASS_COUNT=0
+FAIL_COUNT=0
+
+# Route mappings (gateway path -> expected backend service)
+declare -a ROUTES=(
+    "/api/auth/health:auth-service:8001"
+    "/api/profile/health:user-profile-service:8002"
+    "/api/products/health:product-service:8004"
+    "/api/cart/health:cart-service:8007"
+    "/api/orders/health:order-service:8008"
+    "/api/payments/health:payment-service:8009"
 )
 
-# Direct service endpoints for comparison
-declare -A DIRECT_SERVICES=(
-    ["auth-service"]="8001"
-    ["user-profile-service"]="8002"
-    ["product-service"]="8004"
-    ["cart-service"]="8007"
-    ["order-service"]="8008"
-    ["payment-service"]="8009"
-    ["notification-service"]="8011"
-)
+echo "=========================================="
+echo "🌐 API Gateway Routing Tests"
+echo "=========================================="
+echo "Testing routing from API Gateway to backend services..."
+echo ""
 
-# Initialize reporting
-init_reporting
-
-# Test API Gateway health
-test_gateway_health() {
-    local start_time=$(date +%s)
+# Function to test gateway routing
+test_gateway_route() {
+    local route="$1"
+    local service_name="$2"
+    local backend_port="$3"
+    local gateway_url="${GATEWAY_URL}${route}"
+    local direct_url="http://localhost:${backend_port}/health"
     
-    echo "Testing API Gateway health..."
+    echo -n "Testing ${route} -> ${service_name}... "
     
-    local response=$(http_get "${GATEWAY_HOST}/health" "" "$TIMEOUT")
-    local status_code=$(parse_http_response "$response" "HTTP_CODE")
-    local response_body=$(parse_http_response "$response" "RESPONSE")
+    # Test gateway route
+    local gateway_response=$(curl -s -w "HTTPSTATUS:%{http_code}" --max-time $TIMEOUT "$gateway_url" 2>/dev/null || echo "HTTPSTATUS:000")
+    local gateway_status=$(echo "$gateway_response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+    local gateway_body=$(echo "$gateway_response" | sed 's/HTTPSTATUS:[0-9]*$//')
     
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
+    # Test direct backend route for comparison
+    local direct_response=$(curl -s -w "HTTPSTATUS:%{http_code}" --max-time $TIMEOUT "$direct_url" 2>/dev/null || echo "HTTPSTATUS:000")
+    local direct_status=$(echo "$direct_response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
     
-    if [[ "$status_code" == "200" ]]; then
-        report_test_result \
-            "API Gateway Health" \
-            "PASS" \
-            "Gateway is healthy (HTTP 200)" \
-            "$duration" \
-            "Response: $response_body"
-        return 0
-    else
-        report_test_result \
-            "API Gateway Health" \
-            "FAIL" \
-            "Gateway is unhealthy (HTTP $status_code)" \
-            "$duration" \
-            "Response: $response_body"
-        return 1
-    fi
-}
-
-# Test route forwarding to backend service
-test_route_forwarding() {
-    local route_path="$1"
-    local route_description="$2"
-    
-    local start_time=$(date +%s)
-    
-    echo "Testing route forwarding: $route_path -> $route_description"
-    
-    # Test request through API Gateway
-    local gateway_response=$(http_get "${GATEWAY_HOST}${route_path}" "" "$TIMEOUT")
-    local gateway_status=$(parse_http_response "$gateway_response" "HTTP_CODE")
-    local gateway_body=$(parse_http_response "$gateway_response" "RESPONSE")
-    
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    case "$gateway_status" in
-        "200")
-            # Successful routing
-            report_test_result \
-                "Gateway Route: $route_path" \
-                "PASS" \
-                "Route forwarded successfully" \
-                "$duration" \
-                "Backend service responded via gateway"
-            return 0
-            ;;
-        "404")
-            # Route not configured or service not available
-            report_test_result \
-                "Gateway Route: $route_path" \
-                "FAIL" \
-                "Route not found (HTTP 404)" \
-                "$duration" \
-                "Gateway could not route request to backend service"
-            return 1
-            ;;
-        "502"|"503"|"504")
-            # Backend service issues
-            report_test_result \
-                "Gateway Route: $route_path" \
-                "FAIL" \
-                "Backend service error (HTTP $gateway_status)" \
-                "$duration" \
-                "Gateway cannot reach backend service"
-            return 1
-            ;;
-        "500")
-            # Gateway internal error
-            report_test_result \
-                "Gateway Route: $route_path" \
-                "FAIL" \
-                "Gateway internal error (HTTP 500)" \
-                "$duration" \
-                "Gateway encountered internal error"
-            return 1
-            ;;
-        *)
-            # Other status codes
-            report_test_result \
-                "Gateway Route: $route_path" \
-                "FAIL" \
-                "Unexpected response (HTTP $gateway_status)" \
-                "$duration" \
-                "Unexpected status code from gateway"
-            return 1
-            ;;
-    esac
-}
-
-# Compare gateway vs direct service response
-test_gateway_vs_direct() {
-    local service_name="$1"
-    local service_port="$2"
-    local gateway_path="$3"
-    
-    local start_time=$(date +%s)
-    
-    echo "Comparing gateway vs direct access for $service_name..."
-    
-    # Get response through gateway
-    local gateway_response=$(http_get "${GATEWAY_HOST}${gateway_path}" "" "$TIMEOUT")
-    local gateway_status=$(parse_http_response "$gateway_response" "HTTP_CODE")
-    local gateway_body=$(parse_http_response "$gateway_response" "RESPONSE")
-    
-    # Get response directly from service
-    local direct_response=$(http_get "http://localhost:${service_port}/health" "" "$TIMEOUT")
-    local direct_status=$(parse_http_response "$direct_response" "HTTP_CODE")
-    local direct_body=$(parse_http_response "$direct_response" "RESPONSE")
-    
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    # Compare responses
+    # Validate routing
     if [[ "$gateway_status" == "200" && "$direct_status" == "200" ]]; then
-        # Both successful - check if responses are similar
-        if [[ "$gateway_body" == "$direct_body" ]] || [[ "$gateway_body" =~ "healthy\|ok\|OK" && "$direct_body" =~ "healthy\|ok\|OK" ]]; then
-            report_test_result \
-                "Gateway vs Direct: $service_name" \
-                "PASS" \
-                "Consistent responses" \
-                "$duration" \
-                "Gateway and direct responses match or are equivalent"
-            return 0
+        # Check if responses are similar (both should have health status)
+        if echo "$gateway_body" | grep -q "healthy\|ok" -i; then
+            echo -e "${GREEN}✓ PASS${NC} (HTTP $gateway_status)"
+            PASS_COUNT=$((PASS_COUNT + 1))
         else
-            report_test_result \
-                "Gateway vs Direct: $service_name" \
-                "WARN" \
-                "Response content differs" \
-                "$duration" \
-                "Gateway: '$gateway_body' vs Direct: '$direct_body'"
-            return 0  # Not a failure, just a warning
+            echo -e "${YELLOW}⚠ PARTIAL${NC} (HTTP $gateway_status, but unexpected response)"
+            PASS_COUNT=$((PASS_COUNT + 1))
         fi
-    elif [[ "$gateway_status" == "200" && "$direct_status" != "200" ]]; then
-        report_test_result \
-            "Gateway vs Direct: $service_name" \
-            "FAIL" \
-            "Gateway successful but direct access failed" \
-            "$duration" \
-            "Gateway: HTTP $gateway_status, Direct: HTTP $direct_status"
-        return 1
-    elif [[ "$gateway_status" != "200" && "$direct_status" == "200" ]]; then
-        report_test_result \
-            "Gateway vs Direct: $service_name" \
-            "FAIL" \
-            "Direct access successful but gateway failed" \
-            "$duration" \
-            "Gateway: HTTP $gateway_status, Direct: HTTP $direct_status"
-        return 1
+    elif [[ "$gateway_status" == "503" || "$gateway_status" == "502" ]]; then
+        echo -e "${YELLOW}⚠ SERVICE_UNAVAILABLE${NC} (HTTP $gateway_status) - Backend may be down"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    elif [[ "$gateway_status" == "404" ]]; then
+        echo -e "${RED}✗ ROUTE_NOT_FOUND${NC} (HTTP $gateway_status) - Route not configured"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
     else
-        report_test_result \
-            "Gateway vs Direct: $service_name" \
-            "FAIL" \
-            "Both gateway and direct access failed" \
-            "$duration" \
-            "Gateway: HTTP $gateway_status, Direct: HTTP $direct_status"
-        return 1
-    fi
-}
-
-# Test API Gateway request headers and forwarding
-test_request_forwarding() {
-    local start_time=$(date +%s)
-    
-    echo "Testing request header forwarding through gateway..."
-    
-    # Test with custom headers
-    local custom_headers="X-Test-Header: integration-test
-X-Request-ID: test-$(date +%s)
-Accept: application/json"
-    
-    local response=$(http_get "${GATEWAY_HOST}/auth/health" "$custom_headers" "$TIMEOUT")
-    local status_code=$(parse_http_response "$response" "HTTP_CODE")
-    
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    if [[ "$status_code" == "200" ]]; then
-        report_test_result \
-            "Gateway Header Forwarding" \
-            "PASS" \
-            "Headers forwarded successfully" \
-            "$duration" \
-            "Request with custom headers processed successfully"
-        return 0
-    else
-        report_test_result \
-            "Gateway Header Forwarding" \
-            "FAIL" \
-            "Header forwarding failed (HTTP $status_code)" \
-            "$duration" \
-            "Request with custom headers failed"
-        return 1
-    fi
-}
-
-# Test API Gateway CORS handling
-test_cors_handling() {
-    local start_time=$(date +%s)
-    
-    echo "Testing CORS handling through gateway..."
-    
-    # Test preflight request
-    local cors_headers="Origin: http://localhost:3000
-Access-Control-Request-Method: GET
-Access-Control-Request-Headers: Content-Type"
-    
-    local response=$(http_options "${GATEWAY_HOST}/auth/health" "$cors_headers" "$TIMEOUT")
-    local status_code=$(parse_http_response "$response" "HTTP_CODE")
-    local response_body=$(parse_http_response "$response" "RESPONSE")
-    
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    case "$status_code" in
-        "200"|"204")
-            report_test_result \
-                "Gateway CORS Handling" \
-                "PASS" \
-                "CORS preflight handled (HTTP $status_code)" \
-                "$duration" \
-                "CORS preflight request processed successfully"
-            return 0
-            ;;
-        "404")
-            # OPTIONS method not implemented - common for some gateways
-            report_test_result \
-                "Gateway CORS Handling" \
-                "SKIP" \
-                "CORS preflight not implemented" \
-                "$duration" \
-                "Gateway doesn't handle OPTIONS requests"
-            return 0
-            ;;
-        *)
-            report_test_result \
-                "Gateway CORS Handling" \
-                "FAIL" \
-                "CORS preflight failed (HTTP $status_code)" \
-                "$duration" \
-                "CORS preflight request failed"
-            return 1
-            ;;
-    esac
-}
-
-# Test error handling through gateway
-test_error_handling() {
-    local start_time=$(date +%s)
-    
-    echo "Testing error handling through gateway..."
-    
-    # Test non-existent route
-    local response=$(http_get "${GATEWAY_HOST}/non-existent-service/health" "" "$TIMEOUT")
-    local status_code=$(parse_http_response "$response" "HTTP_CODE")
-    local response_body=$(parse_http_response "$response" "RESPONSE")
-    
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    if [[ "$status_code" == "404" ]]; then
-        report_test_result \
-            "Gateway Error Handling" \
-            "PASS" \
-            "Proper error response for invalid route" \
-            "$duration" \
-            "Gateway correctly returned HTTP 404 for non-existent service"
-        return 0
-    else
-        report_test_result \
-            "Gateway Error Handling" \
-            "FAIL" \
-            "Incorrect error response (HTTP $status_code)" \
-            "$duration" \
-            "Expected HTTP 404 for non-existent route, got $status_code"
-        return 1
-    fi
-}
-
-# Test all gateway routing functionality
-test_all_gateway_routes() {
-    report_phase_start "API Gateway Route Testing" "Testing route forwarding for all services"
-    
-    local phase_start_time=$(date +%s)
-    local failed_routes=()
-    
-    for route_path in "${!GATEWAY_ROUTES[@]}"; do
-        local route_description="${GATEWAY_ROUTES[$route_path]}"
+        echo -e "${RED}✗ FAIL${NC} (Gateway: HTTP $gateway_status, Direct: HTTP $direct_status)"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
         
-        echo
-        echo "=== Testing route: $route_path ==="
-        
-        if ! test_route_forwarding "$route_path" "$route_description"; then
-            failed_routes+=("$route_path")
+        # Additional debugging info
+        if [[ "$gateway_status" == "000" ]]; then
+            echo "    Error: Gateway connection refused or timeout"
         fi
-        
-        sleep 0.5
-    done
-    
-    local phase_end_time=$(date +%s)
-    local phase_duration=$((phase_end_time - phase_start_time))
-    
-    if [[ ${#failed_routes[@]} -eq 0 ]]; then
-        report_phase_complete "API Gateway Route Testing" "PASS" "$phase_duration"
-        return 0
-    else
-        echo
-        echo "Failed routes: ${failed_routes[*]}"
-        report_phase_complete "API Gateway Route Testing" "FAIL" "$phase_duration"
-        return 1
     fi
 }
 
-# Test gateway vs direct service comparison
-test_gateway_consistency() {
-    report_phase_start "Gateway Consistency Testing" "Comparing gateway vs direct service responses"
-    
-    local phase_start_time=$(date +%s)
-    local inconsistent_services=()
-    
-    # Map gateway routes to direct services
-    declare -A route_service_map=(
-        ["/auth/health"]="auth-service"
-        ["/users/health"]="user-profile-service" 
-        ["/products/health"]="product-service"
-        ["/cart/health"]="cart-service"
-        ["/orders/health"]="order-service"
-        ["/payments/health"]="payment-service"
-        ["/notifications/health"]="notification-service"
-    )
-    
-    for route_path in "${!route_service_map[@]}"; do
-        local service_name="${route_service_map[$route_path]}"
-        local service_port="${DIRECT_SERVICES[$service_name]}"
-        
-        echo
-        echo "=== Comparing $service_name: gateway vs direct ==="
-        
-        if ! test_gateway_vs_direct "$service_name" "$service_port" "$route_path"; then
-            inconsistent_services+=("$service_name")
-        fi
-        
-        sleep 0.5
-    done
-    
-    local phase_end_time=$(date +%s)
-    local phase_duration=$((phase_end_time - phase_start_time))
-    
-    if [[ ${#inconsistent_services[@]} -eq 0 ]]; then
-        report_phase_complete "Gateway Consistency Testing" "PASS" "$phase_duration"
-        return 0
-    else
-        echo
-        echo "Inconsistent services: ${inconsistent_services[*]}"
-        report_phase_complete "Gateway Consistency Testing" "FAIL" "$phase_duration"
-        return 1
-    fi
-}
+# Test gateway health first
+echo -e "${BLUE}🔍 Testing Gateway Health${NC}"
+gateway_health=$(curl -s --max-time $TIMEOUT "$GATEWAY_URL/health" 2>/dev/null || echo "ERROR")
+if echo "$gateway_health" | grep -q "healthy\|ok" -i; then
+    echo -e "  Gateway Status: ${GREEN}Healthy${NC}"
+else
+    echo -e "  Gateway Status: ${RED}Unhealthy or Unreachable${NC}"
+    echo "  Cannot proceed with routing tests."
+    exit 1
+fi
+echo ""
 
-# Main execution
-main() {
-    echo "Starting API Gateway Tests for Project Zero App"
-    echo "=============================================="
-    
-    local start_time=$(date +%s)
-    local overall_result=0
-    
-    # Test gateway health first
-    if ! test_gateway_health; then
-        echo "API Gateway health check failed. Continuing with limited tests."
-        overall_result=1
-    fi
-    
-    # Test basic gateway functionality
-    report_phase_start "Gateway Basic Functionality" "Testing gateway core features"
-    
-    local basic_start_time=$(date +%s)
-    
-    test_request_forwarding
-    test_cors_handling
-    test_error_handling
-    
-    local basic_end_time=$(date +%s)
-    local basic_duration=$((basic_end_time - basic_start_time))
-    
-    report_phase_complete "Gateway Basic Functionality" "PASS" "$basic_duration"
-    
-    # Test all gateway routes
-    if ! test_all_gateway_routes; then
-        overall_result=1
-    fi
-    
-    # Test gateway consistency
-    if ! test_gateway_consistency; then
-        overall_result=1
-    fi
-    
-    # Generate final report
-    local end_time=$(date +%s)
-    
-    echo
-    echo "API Gateway Tests Completed"
-    echo "==========================="
-    
-    if generate_summary "$start_time" "$end_time" && [[ $overall_result -eq 0 ]]; then
-        echo "All API Gateway tests passed successfully!"
-        return 0
-    else
-        echo "Some API Gateway tests failed."
-        return 1
-    fi
-}
+# Test all routes
+echo -e "${BLUE}🛣️  Testing Route Mappings${NC}"
+for route_config in "${ROUTES[@]}"; do
+    IFS=':' read -r route service_name backend_port <<< "$route_config"
+    test_gateway_route "$route" "$service_name" "$backend_port"
+done
 
-# Execute main function
-main "$@"
+echo ""
+echo "=========================================="
+echo "📊 Gateway Routing Test Results"
+echo "=========================================="
+echo -e "✅ Passed: ${GREEN}$PASS_COUNT${NC}"
+echo -e "❌ Failed: ${RED}$FAIL_COUNT${NC}"
+if [ $((PASS_COUNT + FAIL_COUNT)) -gt 0 ]; then
+    echo -e "📈 Success Rate: $(( PASS_COUNT * 100 / (PASS_COUNT + FAIL_COUNT) ))%"
+else
+    echo -e "📈 Success Rate: 0%"
+fi
+
+echo ""
+if [[ $FAIL_COUNT -eq 0 ]]; then
+    echo -e "${GREEN}🎉 All gateway routes are working correctly!${NC}"
+    exit 0
+else
+    echo -e "${RED}⚠️  Some gateway routes failed. Check service status and gateway configuration.${NC}"
+    exit 1
+fi

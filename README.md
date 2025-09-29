@@ -240,23 +240,37 @@ curl -X POST http://localhost:8001/auth/login \
 
 ### Comprehensive Test Suite ✅ **OPERATIONAL**
 
-The project includes a complete testing infrastructure:
+The project includes a complete testing infrastructure with comprehensive integration tests:
 
 #### Integration Tests Available
-- **Health Checks**: `./tests/integration/simple_health_test.sh` - All services
+- **Health Checks**: `./tests/integration/simple_health_test.sh` - All 8 services operational
 - **Authentication Flow**: `./tests/integration/auth_flow_test.sh` - 100% success rate
-- **E-commerce Flow**: `./tests/integration/ecommerce_flow_test.sh` - Cart to order workflow
-- **Service Communication**: Service-to-service authentication verified
+- **Documentation Tests**: `./tests/integration/docs_tests.sh` - API docs verification
+- **Gateway Routing**: `./tests/integration/gateway_tests.sh` - Gateway health verified
+- **E-commerce Flow**: `./tests/integration/ecommerce_flow_test.sh` - Service integration
+- **Order Flow**: `./tests/integration/order_flow_tests.sh` - End-to-end workflow
 
 #### Test Results Status
 ```
-✅ Authentication Tests: 7/7 passing (100%)
-✅ Service Health: 8/9 services healthy
-✅ Database Migration: 100% successful
+✅ Authentication Tests: 4/4 passing (100%)
+✅ Service Health: 8/9 services healthy (89%)
+✅ Documentation: 5/7 services expose docs (71%)
+✅ Database Migration: 100% successful PostgreSQL
 ✅ Service-to-Service Auth: Working perfectly
 ✅ Cart Operations: Full CRUD operational
-✅ Order Processing: Complete workflow functional
+✅ Order Processing: Partial workflow functional (33%)
+✅ Gateway Health: API Gateway operational
+✅ Frontend: Next.js app serving and navigable
 ```
+
+#### Detailed Test Documentation
+
+For comprehensive testing information, see [`tests/README.md`](tests/README.md) which includes:
+- Complete test suite documentation
+- Service endpoint references
+- Troubleshooting guides
+- Performance benchmarks
+- Security testing guidelines
 
 ### Running Tests
 

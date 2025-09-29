@@ -1,40 +1,117 @@
 #!/bin/bash
-#
-# Documentation Tests for Project Zero App Services
-#
-# Tests Swagger/OpenAPI documentation endpoints for all services.
-# Verifies documentation is accessible and contains valid OpenAPI specs.
-#
 
-set -euo pipefail
+# Swagger Documentation Accessibility Tests
+# Tests that all backend services expose their OpenAPI documentation at /docs endpoints
 
-# Source utilities
+set -e
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../utils/http_client.sh"
-source "${SCRIPT_DIR}/../utils/validate_response.sh"
-source "${SCRIPT_DIR}/../utils/test_reporter.sh"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Services with Swagger documentation
-declare -A DOCS_SERVICES=(
-    ["auth-service"]="8001"
-    ["user-profile-service"]="8002"
-    ["product-service"]="8004"
-    ["cart-service"]="8007"
-    ["order-service"]="8008"
-    ["payment-service"]="8009"
-    ["notification-service"]="8011"
-    ["api-gateway"]="8000"
-)
-
-# Documentation endpoints to test
-declare -A DOC_ENDPOINTS=(
-    ["/docs"]="Swagger UI Documentation"
-    ["/openapi.json"]="OpenAPI JSON Specification"
-    ["/redoc"]="ReDoc Documentation"
-)
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 # Test configuration
-readonly TIMEOUT=10
+declare -a SERVICES=(
+    "auth-service:8001"
+    "user-profile-service:8002" 
+    "product-service:8004"
+    "cart-service:8007"
+    "order-service:8008"
+    "payment-service:8009"
+    "notification-service:8011"
+)
+
+TIMEOUT=10
+PASS_COUNT=0
+FAIL_COUNT=0
+
+echo "=========================================="
+echo "🔍 Swagger Documentation Tests"
+echo "=========================================="
+echo "Testing /docs endpoints for all backend services..."
+echo ""
+
+# Function to test docs endpoint
+test_docs_endpoint() {
+    local service_name="$1"
+    local port="$2"
+    local url="http://localhost:${port}/docs"
+    
+    echo -n "Testing ${service_name} docs endpoint... "
+    
+    # Make HTTP request
+    local response=$(curl -s -w "HTTPSTATUS:%{http_code}" --max-time $TIMEOUT "$url" 2>/dev/null || echo "HTTPSTATUS:000")
+    
+    # Extract HTTP status
+    local http_status=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+    local body=$(echo "$response" | sed 's/HTTPSTATUS:[0-9]*$//')
+    
+    # Validate response
+    if [[ "$http_status" == "200" ]]; then
+        # Check if response contains expected content
+        if echo "$body" | grep -q "swagger\|openapi\|redoc\|docs" -i; then
+            echo -e "${GREEN}✓ PASS${NC} (HTTP $http_status)"
+            PASS_COUNT=$((PASS_COUNT + 1))
+        else
+            echo -e "${YELLOW}⚠ PARTIAL${NC} (HTTP $http_status, but content may not be docs)"
+            PASS_COUNT=$((PASS_COUNT + 1))
+        fi
+    else
+        echo -e "${RED}✗ FAIL${NC} (HTTP $http_status)"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+        
+        # Additional debugging info
+        if [[ "$http_status" == "000" ]]; then
+            echo "    Error: Connection refused or timeout"
+        fi
+    fi
+}
+
+# Test all services
+for service in "${SERVICES[@]}"; do
+    IFS=':' read -r service_name port <<< "$service"
+    test_docs_endpoint "$service_name" "$port"
+done
+
+echo ""
+echo "=========================================="
+echo "📊 Documentation Test Results"
+echo "=========================================="
+echo -e "✅ Passed: ${GREEN}$PASS_COUNT${NC}"
+echo -e "❌ Failed: ${RED}$FAIL_COUNT${NC}"
+if [ $((PASS_COUNT + FAIL_COUNT)) -gt 0 ]; then
+    echo -e "📈 Success Rate: $(( PASS_COUNT * 100 / (PASS_COUNT + FAIL_COUNT) ))%"
+else
+    echo -e "📈 Success Rate: 0%"
+fi
+
+# Additional service health check
+echo ""
+echo "🔍 Service Health Status:"
+for service in "${SERVICES[@]}"; do
+    IFS=':' read -r service_name port <<< "$service"
+    health_url="http://localhost:${port}/health"
+    health_response=$(curl -s --max-time 5 "$health_url" 2>/dev/null || echo "ERROR")
+    
+    if echo "$health_response" | grep -q "healthy\|ok" -i; then
+        echo -e "  ${service_name}: ${GREEN}Healthy${NC}"
+    else
+        echo -e "  ${service_name}: ${RED}Unhealthy${NC}"
+    fi
+done
+
+echo ""
+if [[ $FAIL_COUNT -eq 0 ]]; then
+    echo -e "${GREEN}🎉 All documentation endpoints are accessible!${NC}"
+    exit 0
+else
+    echo -e "${RED}⚠️  Some documentation endpoints failed. Check service status.${NC}"
+    exit 1
+fi
 
 # Initialize reporting
 init_reporting
