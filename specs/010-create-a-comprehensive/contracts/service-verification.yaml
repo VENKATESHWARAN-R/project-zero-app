@@ -1,0 +1,491 @@
+openapi: 3.0.3
+info:
+  title: Service Verification Contracts
+  version: 1.0.0
+  description: API contracts for verifying individual microservice health and functionality
+
+paths:
+  # Standard health endpoints that all services must implement
+  /health:
+    get:
+      summary: Service health check
+      description: Verify that the service is operational and responding
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  service:
+                    type: string
+                    description: Service name
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                required: [status, service, timestamp]
+
+  /health/ready:
+    get:
+      summary: Service readiness check
+      description: Verify that the service is ready to handle requests (including database connectivity)
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready]
+                  service:
+                    type: string
+                  dependencies:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        enum: [connected, disconnected]
+                      external_services:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            status:
+                              type: string
+                              enum: [available, unavailable]
+                  timestamp:
+                    type: string
+                    format: date-time
+                required: [status, service, dependencies, timestamp]
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [not_ready]
+                  service:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Auth Service Specific Endpoints
+  /auth/verify:
+    get:
+      summary: Verify JWT token
+      description: Validate a JWT access token (used by other services)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+                  user_id:
+                    type: string
+                  email:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+        '401':
+          description: Token is invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      description: Login with email and password to receive JWT tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+              required: [email, password]
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: "Bearer"
+                  expires_in:
+                    type: integer
+                    description: Access token expiration in seconds
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+
+  # Product Catalog Service Endpoints
+  /products:
+    get:
+      summary: List products
+      description: Retrieve list of available products
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /products/{id}:
+    get:
+      summary: Get product details
+      description: Retrieve details for a specific product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Cart Service Endpoints
+  /cart:
+    get:
+      summary: Get user's cart
+      description: Retrieve current cart contents for authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+
+    post:
+      summary: Add item to cart
+      description: Add a product to the user's cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: string
+                quantity:
+                  type: integer
+                  minimum: 1
+              required: [product_id, quantity]
+      responses:
+        '200':
+          description: Item added to cart successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+
+  # Order Service Endpoints
+  /orders:
+    get:
+      summary: Get user orders
+      description: Retrieve order history for authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
+    post:
+      summary: Create order
+      description: Create a new order from cart contents
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipping_address:
+                  $ref: '#/components/schemas/Address'
+                billing_address:
+                  $ref: '#/components/schemas/Address'
+                payment_method:
+                  type: string
+              required: [shipping_address, payment_method]
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        category:
+          type: string
+        in_stock:
+          type: boolean
+        stock_quantity:
+          type: integer
+      required: [id, name, price, category, in_stock]
+
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+              product_name:
+                type: string
+              quantity:
+                type: integer
+              unit_price:
+                type: number
+                format: float
+              total_price:
+                type: number
+                format: float
+        total:
+          type: number
+          format: float
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, user_id, items, total]
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, processing, shipped, delivered, cancelled]
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+              product_name:
+                type: string
+              quantity:
+                type: integer
+              unit_price:
+                type: number
+                format: float
+        subtotal:
+          type: number
+          format: float
+        tax:
+          type: number
+          format: float
+        shipping:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, user_id, status, items, total, created_at]
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+      required: [street, city, state, postal_code, country]
+
+    AuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "authentication_failed"
+        message:
+          type: string
+          example: "Invalid credentials or token expired"
+        timestamp:
+          type: string
+          format: date-time
+      required: [error, message, timestamp]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required: [error, message, timestamp]
