@@ -1,5 +1,5 @@
 <!--
-AGENTS.md
+GEMINI.md
 Purpose: Single, concise source of truth for AI (Claude) and humans about
 project background, active service scope, run instructions, environment, endpoints,
 dependencies, and required documentation hygiene.
