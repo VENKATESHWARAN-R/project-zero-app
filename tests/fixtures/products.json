@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "Smartphone Pro Max",
+    "description": "Latest flagship smartphone with advanced camera system and 5G connectivity",
+    "price": 999.99,
+    "category": "electronics",
+    "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+    "stock_quantity": 50,
+    "sku": "PHONE-001",
+    "features": ["5G", "Advanced Camera", "All-day Battery", "Premium Build"]
+  },
+  {
+    "id": 2,
+    "name": "Gaming Laptop Ultra",
+    "description": "High-performance gaming laptop with RTX graphics and 16GB RAM",
+    "price": 1299.99,
+    "category": "electronics",
+    "image_url": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400",
+    "stock_quantity": 25,
+    "sku": "LAPTOP-001",
+    "features": ["RTX Graphics", "16GB RAM", "1TB SSD", "Gaming Optimized"]
+  },
+  {
+    "id": 3,
+    "name": "Wireless Bluetooth Headphones",
+    "description": "Premium noise-cancelling wireless headphones with 30-hour battery life",
+    "price": 199.99,
+    "category": "electronics",
+    "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+    "stock_quantity": 100,
+    "sku": "HEADPHONES-001",
+    "features": ["Noise Cancelling", "30-hour Battery", "Wireless", "Premium Audio"]
+  },
+  {
+    "id": 4,
+    "name": "Classic Denim Jacket",
+    "description": "Timeless denim jacket in vintage wash, perfect for casual wear",
+    "price": 79.99,
+    "category": "clothing",
+    "image_url": "https://images.unsplash.com/photo-1544966503-7cc5ac882d2e?w=400",
+    "stock_quantity": 75,
+    "sku": "JACKET-001",
+    "features": ["100% Cotton", "Vintage Wash", "Classic Fit", "Durable Construction"]
+  },
+  {
+    "id": 5,
+    "name": "Running Sneakers",
+    "description": "Lightweight running shoes with advanced cushioning technology",
+    "price": 129.99,
+    "category": "clothing",
+    "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+    "stock_quantity": 60,
+    "sku": "SHOES-001",
+    "features": ["Lightweight", "Advanced Cushioning", "Breathable", "Durable Sole"]
+  },
+  {
+    "id": 6,
+    "name": "Programming Fundamentals",
+    "description": "Comprehensive guide to programming fundamentals and best practices",
+    "price": 49.99,
+    "category": "books",
+    "image_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400",
+    "stock_quantity": 200,
+    "sku": "BOOK-001",
+    "features": ["Comprehensive Guide", "Best Practices", "Examples", "Expert Authors"]
+  },
+  {
+    "id": 7,
+    "name": "Coffee Table",
+    "description": "Modern wooden coffee table with storage compartment",
+    "price": 299.99,
+    "category": "home",
+    "image_url": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
+    "stock_quantity": 15,
+    "sku": "FURNITURE-001",
+    "features": ["Solid Wood", "Storage Compartment", "Modern Design", "Easy Assembly"]
+  },
+  {
+    "id": 8,
+    "name": "Tablet Pro 12.9",
+    "description": "Professional-grade tablet with Apple M2 chip and 12.9-inch display",
+    "price": 599.99,
+    "category": "electronics",
+    "image_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
+    "stock_quantity": 35,
+    "sku": "TABLET-001",
+    "features": ["M2 Chip", "12.9-inch Display", "Apple Pencil Support", "Professional Grade"]
+  },
+  {
+    "id": 9,
+    "name": "Casual Cotton T-Shirt",
+    "description": "Comfortable cotton t-shirt in various colors and sizes",
+    "price": 24.99,
+    "category": "clothing",
+    "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+    "stock_quantity": 150,
+    "sku": "TSHIRT-001",
+    "features": ["100% Cotton", "Comfortable Fit", "Various Colors", "Machine Washable"]
+  },
+  {
+    "id": 10,
+    "name": "Science Fiction Novel",
+    "description": "Bestselling science fiction novel with thrilling adventures",
+    "price": 16.99,
+    "category": "books",
+    "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    "stock_quantity": 80,
+    "sku": "BOOK-002",
+    "features": ["Bestselling", "Science Fiction", "Thrilling Adventure", "Award Winning"]
+  },
+  {
+    "id": 11,
+    "name": "Desk Lamp LED",
+    "description": "Adjustable LED desk lamp with USB charging port",
+    "price": 89.99,
+    "category": "home",
+    "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    "stock_quantity": 40,
+    "sku": "LAMP-001",
+    "features": ["LED Lighting", "USB Charging", "Adjustable", "Energy Efficient"]
+  },
+  {
+    "id": 12,
+    "name": "Smartwatch Series 9",
+    "description": "Advanced smartwatch with health tracking and GPS",
+    "price": 399.99,
+    "category": "electronics",
+    "image_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+    "stock_quantity": 45,
+    "sku": "WATCH-001",
+    "features": ["Health Tracking", "GPS", "Water Resistant", "Long Battery Life"]
+  }
+]

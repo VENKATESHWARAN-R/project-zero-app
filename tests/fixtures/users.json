@@ -1,0 +1,124 @@
+[
+  {
+    "id": "test-user-1",
+    "email": "test@example.com",
+    "password": "testpassword123",
+    "profile": {
+      "first_name": "Test",
+      "last_name": "User",
+      "phone": "+1-555-0101",
+      "date_of_birth": "1990-01-01"
+    },
+    "address": {
+      "street": "123 Test Street",
+      "city": "Test City",
+      "state": "TC",
+      "postal_code": "12345",
+      "country": "US"
+    },
+    "preferences": {
+      "newsletter": true,
+      "notifications": true,
+      "language": "en",
+      "currency": "USD"
+    }
+  },
+  {
+    "id": "admin-user-1",
+    "email": "admin@example.com",
+    "password": "adminpassword123",
+    "profile": {
+      "first_name": "Admin",
+      "last_name": "User",
+      "phone": "+1-555-0102",
+      "date_of_birth": "1985-06-15"
+    },
+    "address": {
+      "street": "456 Admin Avenue",
+      "city": "Admin City",
+      "state": "AC",
+      "postal_code": "54321",
+      "country": "US"
+    },
+    "preferences": {
+      "newsletter": false,
+      "notifications": true,
+      "language": "en",
+      "currency": "USD"
+    },
+    "role": "admin"
+  },
+  {
+    "id": "user-2",
+    "email": "user@example.com",
+    "password": "userpassword123",
+    "profile": {
+      "first_name": "Regular",
+      "last_name": "User",
+      "phone": "+1-555-0103",
+      "date_of_birth": "1992-12-25"
+    },
+    "address": {
+      "street": "789 User Lane",
+      "city": "User Town",
+      "state": "UT",
+      "postal_code": "67890",
+      "country": "US"
+    },
+    "preferences": {
+      "newsletter": true,
+      "notifications": false,
+      "language": "en",
+      "currency": "USD"
+    }
+  },
+  {
+    "id": "premium-user-1",
+    "email": "premium@example.com",
+    "password": "premiumpassword123",
+    "profile": {
+      "first_name": "Premium",
+      "last_name": "Customer",
+      "phone": "+1-555-0104",
+      "date_of_birth": "1988-03-10"
+    },
+    "address": {
+      "street": "321 Premium Plaza",
+      "city": "Premium City",
+      "state": "PC",
+      "postal_code": "13579",
+      "country": "US"
+    },
+    "preferences": {
+      "newsletter": true,
+      "notifications": true,
+      "language": "en",
+      "currency": "USD"
+    },
+    "membership": "premium"
+  },
+  {
+    "id": "international-user-1",
+    "email": "international@example.com",
+    "password": "intlpassword123",
+    "profile": {
+      "first_name": "International",
+      "last_name": "User",
+      "phone": "+44-20-7946-0958",
+      "date_of_birth": "1995-07-20"
+    },
+    "address": {
+      "street": "42 International Road",
+      "city": "London",
+      "state": "England",
+      "postal_code": "SW1A 1AA",
+      "country": "UK"
+    },
+    "preferences": {
+      "newsletter": true,
+      "notifications": true,
+      "language": "en",
+      "currency": "GBP"
+    }
+  }
+]

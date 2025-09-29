@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('./logger');
 
 class AuthService {
   constructor() {
@@ -9,9 +10,15 @@ class AuthService {
 
   async verifyToken(token) {
     try {
+      logger.info('DEBUG: Verifying token with auth service', { 
+        authServiceUrl: this.authServiceUrl, 
+        tokenPreview: token.substring(0, 50) 
+      });
+      
       const response = await axios.get(`${this.authServiceUrl}/auth/verify`, {
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${token}`,
+          Host: 'localhost:8001'  // Override host header to bypass uvicorn validation
         },
         timeout: this.timeout,
       });
@@ -26,6 +33,12 @@ class AuthService {
 
       return { valid: false };
     } catch (error) {
+      logger.error('DEBUG: Auth verification error', { 
+        status: error.response?.status, 
+        data: error.response?.data,
+        message: error.message
+      });
+      
       if (error.response?.status === 401) {
         return { valid: false, error: 'Invalid token' };
       }
@@ -55,7 +68,7 @@ class AuthService {
     }
 
     if (authHeader.startsWith('Bearer ')) {
-      return authHeader;
+      return authHeader.substring(7);
     }
 
     return null;

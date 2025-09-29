@@ -70,7 +70,7 @@ services:
       PORT: 8001
       HOST: 0.0.0.0
       ENVIRONMENT: development
-      DATABASE_URL: sqlite:////data/auth_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET: dev-secret-key-change-in-prod
       ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
       LOG_LEVEL: INFO
@@ -79,6 +79,8 @@ services:
       - auth_data:/data
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -111,13 +113,15 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8004
-      DATABASE_URL: sqlite:////data/product_catalog.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       AUTH_SERVICE_URL: http://auth-service:8001
       LOG_LEVEL: INFO
     volumes:
       - product_data:/data
     depends_on:
       auth-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -149,8 +153,8 @@ services:
     environment:
       PORT: 8007
       NODE_ENV: production
-      DATABASE_URL: sqlite:////data/cart.db
-      AUTH_SERVICE_URL: http://auth-service:8001
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
+      AUTH_SERVICE_URL: http://host.docker.internal:8001
       PRODUCT_SERVICE_URL: http://product-service:8004
       JWT_SECRET: dev-secret-key-change-in-prod
       LOG_LEVEL: info
@@ -163,6 +167,8 @@ services:
       auth-service:
         condition: service_healthy
       product-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -195,7 +201,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8008
-      DATABASE_URL: sqlite:///./data/order_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       CART_SERVICE_URL: http://cart-service:8007
@@ -212,6 +218,8 @@ services:
       cart-service:
         condition: service_healthy
       product-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -245,7 +253,7 @@ services:
       HOST: 0.0.0.0
       PORT: 8002
       DEBUG: false
-      DATABASE_URL: sqlite:///./data/user_profile_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       LOG_LEVEL: INFO
@@ -254,6 +262,8 @@ services:
       - user_profile_data:/data
     depends_on:
       auth-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -285,7 +295,7 @@ services:
       HOST: 0.0.0.0
       PORT: 8009
       DEBUG: false
-      DATABASE_URL: sqlite:///./data/payment_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       ORDER_SERVICE_URL: http://order-service:8008
@@ -305,6 +315,8 @@ services:
       auth-service:
         condition: service_healthy
       order-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -334,7 +346,8 @@ services:
       HOST: 0.0.0.0
       PORT: 8011
       NODE_ENV: production
-      DATABASE_URL: sqlite:////data/notification_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
+      JWT_SECRET_KEY: dev-secret-key-change-in-production-at-least-32-chars
       AUTH_SERVICE_URL: http://auth-service:8001
       USER_PROFILE_SERVICE_URL: http://user-profile-service:8002
       LOG_LEVEL: info
@@ -344,6 +357,8 @@ services:
       auth-service:
         condition: service_healthy
       user-profile-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net

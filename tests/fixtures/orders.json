@@ -1,0 +1,168 @@
+[
+  {
+    "id": "order-001",
+    "user_id": "test-user-1",
+    "status": "pending",
+    "items": [
+      {
+        "product_id": 1,
+        "product_name": "Smartphone Pro Max",
+        "quantity": 1,
+        "unit_price": 999.99,
+        "total_price": 999.99
+      },
+      {
+        "product_id": 3,
+        "product_name": "Wireless Bluetooth Headphones",
+        "quantity": 2,
+        "unit_price": 199.99,
+        "total_price": 399.98
+      }
+    ],
+    "subtotal": 1399.97,
+    "tax_rate": 0.085,
+    "tax_amount": 118.99,
+    "shipping_cost": 15.00,
+    "total_amount": 1533.96,
+    "shipping_address": {
+      "street": "123 Test Street",
+      "city": "Test City",
+      "state": "TC",
+      "postal_code": "12345",
+      "country": "US"
+    },
+    "payment_method": "credit_card",
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  {
+    "id": "order-002",
+    "user_id": "user-2",
+    "status": "completed",
+    "items": [
+      {
+        "product_id": 4,
+        "product_name": "Classic Denim Jacket",
+        "quantity": 1,
+        "unit_price": 79.99,
+        "total_price": 79.99
+      },
+      {
+        "product_id": 5,
+        "product_name": "Running Sneakers",
+        "quantity": 1,
+        "unit_price": 129.99,
+        "total_price": 129.99
+      }
+    ],
+    "subtotal": 209.98,
+    "tax_rate": 0.085,
+    "tax_amount": 17.85,
+    "shipping_cost": 10.00,
+    "total_amount": 237.83,
+    "shipping_address": {
+      "street": "789 User Lane",
+      "city": "User Town",
+      "state": "UT",
+      "postal_code": "67890",
+      "country": "US"
+    },
+    "payment_method": "paypal",
+    "created_at": "2024-01-10T14:45:00Z",
+    "completed_at": "2024-01-12T09:20:00Z"
+  },
+  {
+    "id": "order-003",
+    "user_id": "premium-user-1",
+    "status": "shipped",
+    "items": [
+      {
+        "product_id": 2,
+        "product_name": "Gaming Laptop Ultra",
+        "quantity": 1,
+        "unit_price": 1299.99,
+        "total_price": 1299.99
+      }
+    ],
+    "subtotal": 1299.99,
+    "tax_rate": 0.085,
+    "tax_amount": 110.50,
+    "shipping_cost": 0.00,
+    "total_amount": 1410.49,
+    "shipping_address": {
+      "street": "321 Premium Plaza",
+      "city": "Premium City",
+      "state": "PC",
+      "postal_code": "13579",
+      "country": "US"
+    },
+    "payment_method": "credit_card",
+    "created_at": "2024-01-08T16:20:00Z",
+    "shipped_at": "2024-01-09T11:30:00Z",
+    "tracking_number": "1Z999AA1234567890"
+  },
+  {
+    "id": "order-004",
+    "user_id": "international-user-1",
+    "status": "processing",
+    "items": [
+      {
+        "product_id": 6,
+        "product_name": "Programming Fundamentals",
+        "quantity": 3,
+        "unit_price": 49.99,
+        "total_price": 149.97
+      },
+      {
+        "product_id": 10,
+        "product_name": "Science Fiction Novel",
+        "quantity": 2,
+        "unit_price": 16.99,
+        "total_price": 33.98
+      }
+    ],
+    "subtotal": 183.95,
+    "tax_rate": 0.20,
+    "tax_amount": 36.79,
+    "shipping_cost": 25.00,
+    "total_amount": 245.74,
+    "shipping_address": {
+      "street": "42 International Road",
+      "city": "London",
+      "state": "England",
+      "postal_code": "SW1A 1AA",
+      "country": "UK"
+    },
+    "payment_method": "bank_transfer",
+    "created_at": "2024-01-12T08:15:00Z"
+  },
+  {
+    "id": "order-005",
+    "user_id": "test-user-1",
+    "status": "cancelled",
+    "items": [
+      {
+        "product_id": 8,
+        "product_name": "Tablet Pro 12.9",
+        "quantity": 1,
+        "unit_price": 599.99,
+        "total_price": 599.99
+      }
+    ],
+    "subtotal": 599.99,
+    "tax_rate": 0.085,
+    "tax_amount": 51.00,
+    "shipping_cost": 15.00,
+    "total_amount": 665.99,
+    "shipping_address": {
+      "street": "123 Test Street",
+      "city": "Test City",
+      "state": "TC",
+      "postal_code": "12345",
+      "country": "US"
+    },
+    "payment_method": "credit_card",
+    "created_at": "2024-01-05T12:00:00Z",
+    "cancelled_at": "2024-01-06T10:30:00Z",
+    "cancellation_reason": "Customer request"
+  }
+]
