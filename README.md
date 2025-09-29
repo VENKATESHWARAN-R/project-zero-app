@@ -55,7 +55,7 @@ This application was specifically designed to:
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-**Current Status**: ✅ **7 Backend Services + API Gateway + Frontend Implemented & Running**
+**Current Status**: ✅ **8 Backend Services + API Gateway + Frontend Implemented & Running**
 
 ### Service Breakdown
 
@@ -129,15 +129,21 @@ This application was specifically designed to:
 
 ## Phase 3 - Enhanced Features
 
-### 📂 005-category-service
-- **Technology**: Node.js/Express
-- **Purpose**: Product categorization and organization
+### 📂 005-category-service ✅
+- **Technology**: Node.js/Express + Sequelize + SQLite
+- **Purpose**: Hierarchical product categorization and organization with admin management
+- **Endpoints**: `/categories`, `/categories/{id}`, `/categories/{id}/hierarchy`, `/categories/{id}/products`, `/categories/search`
+- **Database**: Hierarchical categories with parent-child relationships (SQLite)
 - **Port**: 8005
+- **Status**: **Fully implemented with 5-level hierarchy, circular prevention, and admin authentication**
 
-### 📧 011-notification-service
-- **Technology**: Node.js/Express
-- **Purpose**: Email/SMS notifications
+### 📧 011-notification-service ✅
+- **Technology**: Node.js/Express + SQLite
+- **Purpose**: Multi-channel notifications (email, SMS, in-app) with template management
+- **Endpoints**: `/notifications`, `/notifications/schedule`, `/notifications/template`, `/templates`, `/preferences`
+- **Database**: Notifications, templates, user preferences (SQLite)
 - **Port**: 8011
+- **Status**: **Fully implemented with template system and user preferences**
 
 ### 📊 006-inventory-service
 - **Technology**: Python/FastAPI
@@ -239,9 +245,11 @@ project-zero-app/
 ├── services/                 # Backend microservices
 │   ├── auth-service/         # ✅ JWT authentication (Python/FastAPI)
 │   ├── product-catalog-service/ # ✅ Product management (Python/FastAPI)
+│   ├── category-service/     # ✅ Category management (Node.js/Express)
 │   ├── cart-service/         # ✅ Shopping cart (Node.js/Express)
 │   ├── order-service/        # ✅ Order processing (Python/FastAPI)
-│   └── payment-service/      # ✅ Payment processing (Python/FastAPI)
+│   ├── payment-service/      # ✅ Payment processing (Python/FastAPI)
+│   └── notification-service/ # ✅ Notifications (Node.js/Express)
 ├── frontend/                 # ✅ Next.js web application - Fully implemented
 ├── infrastructure/
 │   ├── docker-compose/      # Local development
@@ -320,9 +328,11 @@ project-zero-app/
    curl http://localhost:8000/health  # API Gateway
    curl http://localhost:8001/health  # Auth Service
    curl http://localhost:8004/health  # Product Service
+   curl http://localhost:8005/health  # Category Service
    curl http://localhost:8007/health  # Cart Service
    curl http://localhost:8008/health  # Order Service
    curl http://localhost:8009/health  # Payment Service
+   curl http://localhost:8011/health  # Notification Service
    curl http://localhost:8002/health  # User Profile Service
    ```
 
@@ -333,9 +343,11 @@ project-zero-app/
      - API Gateway: http://localhost:8000/gateway/services (Service registry)
      - Auth Service: http://localhost:8001/docs
      - Product Service: http://localhost:8004/docs
+     - Category Service: http://localhost:8005/docs
      - Cart Service: http://localhost:8007/docs (if available)
      - Order Service: http://localhost:8008/docs
      - Payment Service: http://localhost:8009/docs
+     - Notification Service: http://localhost:8011/docs
      - User Profile Service: http://localhost:8002/docs
    - **Individual services**: http://localhost:800X
 
@@ -364,17 +376,21 @@ PAYMENT_SERVICE_URL=http://localhost:8009
 Each service exposes comprehensive OpenAPI documentation:
 - **Auth Service**: http://localhost:8001/docs
 - **Product Catalog**: http://localhost:8004/docs
+- **Category Service**: http://localhost:8005/docs
 - **Cart Service**: http://localhost:8007/docs (if available)
 - **Order Service**: http://localhost:8008/docs
 - **Payment Service**: http://localhost:8009/docs
+- **Notification Service**: http://localhost:8011/docs
 
 ### API Specifications
 Complete OpenAPI specifications are available in each service directory:
 - `services/auth-service/swagger.json`
 - `services/product-catalog-service/swagger.json`
+- `services/category-service/swagger.json`
 - `services/cart-service/swagger.json`
 - `services/order-service/swagger.json`
 - `services/payment-service/swagger.json`
+- `services/notification-service/swagger.json`
 
 ### Comprehensive Documentation
 - **Complete API Guide**: [docs/api-documentation.md](docs/api-documentation.md)

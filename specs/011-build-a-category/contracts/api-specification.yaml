@@ -1,0 +1,761 @@
+openapi: 3.0.3
+info:
+  title: Category Management Service API
+  description: Hierarchical category management for e-commerce product organization
+  version: 1.0.0
+  contact:
+    name: Project Zero App Team
+servers:
+  - url: http://localhost:8005
+    description: Local development server
+  - url: http://category-service:8005
+    description: Docker container
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns service health status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health/ready:
+    get:
+      summary: Readiness check endpoint
+      description: Returns service readiness status including dependencies
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories:
+    get:
+      summary: Get categories
+      description: Retrieve categories with optional filtering and hierarchy
+      tags:
+        - Categories
+      parameters:
+        - name: parent_id
+          in: query
+          description: Filter by parent category ID (null for root categories)
+          required: false
+          schema:
+            type: integer
+            nullable: true
+        - name: include_children
+          in: query
+          description: Include child categories in response
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: include_product_count
+          in: query
+          description: Include product count for each category
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: active_only
+          in: query
+          description: Only return active categories
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  total:
+                    type: integer
+                  filters:
+                    type: object
+                    properties:
+                      parent_id:
+                        type: integer
+                        nullable: true
+                      include_children:
+                        type: boolean
+                      include_product_count:
+                        type: boolean
+                      active_only:
+                        type: boolean
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create new category
+      description: Create a new category (admin only)
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Category name conflict within parent scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/{id}:
+    get:
+      summary: Get category by ID
+      description: Retrieve a specific category with optional hierarchy information
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: include_children
+          in: query
+          description: Include child categories
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: include_ancestors
+          in: query
+          description: Include ancestor categories (breadcrumb)
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: include_product_count
+          in: query
+          description: Include product count
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetailResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update category
+      description: Update an existing category (admin only)
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid request data or circular hierarchy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Category name conflict or hierarchy violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete category
+      description: Delete a category (admin only, must have no active children)
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: force
+          in: query
+          description: Force delete by deactivating instead of hard delete
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '204':
+          description: Category deleted successfully
+        '400':
+          description: Cannot delete category with active children
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/{id}/hierarchy:
+    get:
+      summary: Get category hierarchy
+      description: Get complete hierarchy information for a category
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category hierarchy retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryHierarchyResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/{id}/products:
+    get:
+      summary: Get products in category
+      description: Retrieve products associated with a category
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: include_subcategories
+          in: query
+          description: Include products from subcategories
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of products per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Product catalog service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/search:
+    get:
+      summary: Search categories
+      description: Search categories by name or description
+      tags:
+        - Categories
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 1
+        - name: active_only
+          in: query
+          description: Only search active categories
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  query:
+                    type: string
+                  total:
+                    type: integer
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from auth service
+
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Electronics"
+        slug:
+          type: string
+          example: "electronics"
+        description:
+          type: string
+          nullable: true
+          example: "Electronic devices and accessories"
+        image_url:
+          type: string
+          nullable: true
+          format: uri
+          example: "https://example.com/images/electronics.jpg"
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        sort_order:
+          type: integer
+          example: 0
+        is_active:
+          type: boolean
+          example: true
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+          example:
+            seo_title: "Electronics - Best Deals"
+            display_color: "#007bff"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-09-29T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-09-29T10:00:00Z"
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          description: "Included when include_children=true"
+        product_count:
+          type: integer
+          description: "Included when include_product_count=true"
+          example: 42
+
+    CategoryCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Gaming Laptops"
+        description:
+          type: string
+          nullable: true
+          example: "High-performance laptops for gaming"
+        image_url:
+          type: string
+          nullable: true
+          format: uri
+          example: "https://example.com/images/gaming-laptops.jpg"
+        parent_id:
+          type: integer
+          nullable: true
+          example: 5
+        sort_order:
+          type: integer
+          minimum: 0
+          example: 10
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Gaming Laptops"
+        description:
+          type: string
+          nullable: true
+          example: "High-performance laptops for gaming"
+        image_url:
+          type: string
+          nullable: true
+          format: uri
+          example: "https://example.com/images/gaming-laptops.jpg"
+        parent_id:
+          type: integer
+          nullable: true
+          example: 5
+        sort_order:
+          type: integer
+          minimum: 0
+          example: 10
+        is_active:
+          type: boolean
+          example: true
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+    CategoryDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          properties:
+            ancestors:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+              description: "Included when include_ancestors=true"
+            full_path:
+              type: string
+              example: "Electronics > Computers > Laptops"
+              description: "Human-readable category path"
+
+    CategoryHierarchyResponse:
+      type: object
+      properties:
+        category:
+          $ref: '#/components/schemas/Category'
+        ancestors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        descendants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        depth:
+          type: integer
+          example: 2
+        max_depth:
+          type: integer
+          example: 5
+
+    ProductListResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+        category:
+          $ref: '#/components/schemas/Category'
+        filters:
+          type: object
+          properties:
+            include_subcategories:
+              type: boolean
+
+    ProductSummary:
+      type: object
+      description: "Product information from Product Catalog Service"
+      properties:
+        id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: "Gaming Laptop Pro"
+        price:
+          type: number
+          format: float
+          example: 1299.99
+        image_url:
+          type: string
+          format: uri
+          example: "https://example.com/images/laptop-pro.jpg"
+        category_ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 5, 12]
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 156
+        pages:
+          type: integer
+          example: 8
+        has_next:
+          type: boolean
+          example: true
+        has_prev:
+          type: boolean
+          example: false
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-29T10:00:00Z"
+        version:
+          type: string
+          example: "1.0.0"
+        uptime:
+          type: number
+          description: "Uptime in seconds"
+          example: 3600
+
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+          example: "ready"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-29T10:00:00Z"
+        dependencies:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [connected, disconnected]
+                  example: "connected"
+                response_time:
+                  type: number
+                  description: "Response time in ms"
+                  example: 5.2
+            auth_service:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [available, unavailable]
+                  example: "available"
+                response_time:
+                  type: number
+                  example: 12.5
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Invalid category name"
+            details:
+              type: object
+              additionalProperties: true
+              example:
+                field: "name"
+                reason: "Name must be between 1 and 100 characters"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-29T10:00:00Z"
+        request_id:
+          type: string
+          example: "req_12345"
+
+tags:
+  - name: Health
+    description: Service health and readiness endpoints
+  - name: Categories
+    description: Category management operations
+  - name: Products
+    description: Product-category integration endpoints

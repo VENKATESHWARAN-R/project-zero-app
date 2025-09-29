@@ -12,6 +12,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8001
       PRODUCT_SERVICE_URL: http://product-service:8004
       CART_SERVICE_URL: http://cart-service:8007
+      CATEGORY_SERVICE_URL: http://category-service:8005
       ORDER_SERVICE_URL: http://order-service:8008
       PAYMENT_SERVICE_URL: http://payment-service:8009
       USER_PROFILE_SERVICE_URL: http://user-profile-service:8002
@@ -27,6 +28,8 @@ services:
       product-service:
         condition: service_healthy
       cart-service:
+        condition: service_healthy
+      category-service:
         condition: service_healthy
       order-service:
         condition: service_healthy
@@ -70,7 +73,7 @@ services:
       PORT: 8001
       HOST: 0.0.0.0
       ENVIRONMENT: development
-      DATABASE_URL: sqlite:////data/auth_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET: dev-secret-key-change-in-prod
       ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
       LOG_LEVEL: INFO
@@ -79,6 +82,8 @@ services:
       - auth_data:/data
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -111,13 +116,15 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8004
-      DATABASE_URL: sqlite:////data/product_catalog.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       AUTH_SERVICE_URL: http://auth-service:8001
       LOG_LEVEL: INFO
     volumes:
       - product_data:/data
     depends_on:
       auth-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -149,7 +156,7 @@ services:
     environment:
       PORT: 8007
       NODE_ENV: production
-      DATABASE_URL: sqlite:////data/cart.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       AUTH_SERVICE_URL: http://auth-service:8001
       PRODUCT_SERVICE_URL: http://product-service:8004
       JWT_SECRET: dev-secret-key-change-in-prod
@@ -163,6 +170,8 @@ services:
       auth-service:
         condition: service_healthy
       product-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -185,6 +194,53 @@ services:
         - action: rebuild
           path: ./services/cart-service/Dockerfile
 
+  category-service:
+    build:
+      context: ./services/category-service
+      dockerfile: Dockerfile
+    image: project-zero-category
+    ports:
+      - "8005:8005"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8005
+      NODE_ENV: production
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
+      AUTH_SERVICE_URL: http://auth-service:8001
+      PRODUCT_SERVICE_URL: http://product-service:8004
+      JWT_SECRET_KEY: dev-secret-key-change-in-prod
+      LOG_LEVEL: info
+      CORS_ORIGIN: http://localhost:3000,http://frontend:3000
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    volumes:
+      - category_data:/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - project-zero-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/category-service/src
+        - action: rebuild
+          path: ./services/category-service/package.json
+        - action: rebuild
+          path: ./services/category-service/yarn.lock
+        - action: rebuild
+          path: ./services/category-service/Dockerfile
+
   order-service:
     build:
       context: ./services/order-service
@@ -195,7 +251,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8008
-      DATABASE_URL: sqlite:///./data/order_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       CART_SERVICE_URL: http://cart-service:8007
@@ -212,6 +268,8 @@ services:
       cart-service:
         condition: service_healthy
       product-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -245,7 +303,7 @@ services:
       HOST: 0.0.0.0
       PORT: 8002
       DEBUG: false
-      DATABASE_URL: sqlite:///./data/user_profile_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       LOG_LEVEL: INFO
@@ -254,6 +312,8 @@ services:
       - user_profile_data:/data
     depends_on:
       auth-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -285,7 +345,7 @@ services:
       HOST: 0.0.0.0
       PORT: 8009
       DEBUG: false
-      DATABASE_URL: sqlite:///./data/payment_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       JWT_SECRET_KEY: dev-secret-key-change-in-prod
       AUTH_SERVICE_URL: http://auth-service:8001
       ORDER_SERVICE_URL: http://order-service:8008
@@ -305,6 +365,8 @@ services:
       auth-service:
         condition: service_healthy
       order-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -334,7 +396,7 @@ services:
       HOST: 0.0.0.0
       PORT: 8011
       NODE_ENV: production
-      DATABASE_URL: sqlite:////data/notification_service.db
+      DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
       AUTH_SERVICE_URL: http://auth-service:8001
       USER_PROFILE_SERVICE_URL: http://user-profile-service:8002
       LOG_LEVEL: info
@@ -344,6 +406,8 @@ services:
       auth-service:
         condition: service_healthy
       user-profile-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - project-zero-net
@@ -378,6 +442,7 @@ services:
       NEXT_PUBLIC_AUTH_API_URL: http://localhost:8001
       NEXT_PUBLIC_PRODUCTS_API_URL: http://localhost:8004
       NEXT_PUBLIC_CART_API_URL: http://localhost:8007
+      NEXT_PUBLIC_CATEGORY_API_URL: http://localhost:8005
       NEXT_PUBLIC_ORDER_API_URL: http://localhost:8008
       NEXT_PUBLIC_PAYMENT_API_URL: http://localhost:8009
       NEXT_PUBLIC_USER_PROFILE_API_URL: http://localhost:8002
@@ -386,6 +451,7 @@ services:
       AUTH_API_URL: http://auth-service:8001
       PRODUCTS_API_URL: http://product-service:8004
       CART_API_URL: http://cart-service:8007
+      CATEGORY_API_URL: http://category-service:8005
       ORDER_API_URL: http://order-service:8008
       PAYMENT_API_URL: http://payment-service:8009
       USER_PROFILE_API_URL: http://user-profile-service:8002
@@ -399,6 +465,8 @@ services:
       product-service:
         condition: service_healthy
       cart-service:
+        condition: service_healthy
+      category-service:
         condition: service_healthy
       order-service:
         condition: service_healthy
@@ -476,6 +544,7 @@ volumes:
   auth_data:
   product_data:
   cart_data:
+  category_data:
   order_data:
   payment_data:
   user_profile_data:

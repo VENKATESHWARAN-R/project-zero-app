@@ -9,11 +9,11 @@ If you (Claude) modify code, you MUST update impacted service README(s) and this
 
 # Project Zero App – Core Background & AI Collaboration Guide
 
-Last Updated: 2025-09-28
+Last Updated: 2025-09-29
 
 ## 1. Project Background
 
-Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. Active services include a hardened Authentication Service (Auth Service) for identity and token lifecycle management, an Order Processing Service (Order Service) handling complete order workflows from cart checkout to delivery, and a Notification Service managing all user communications via email, SMS, and in-app channels.
+Project Zero App is an e-commerce demonstration platform built as a polyglot microservice system to showcase: (a) realistic service boundaries, (b) security analysis targets, (c) DevOps & observability patterns, and (d) specification‑driven delivery. Active services include a hardened Authentication Service (Auth Service) for identity and token lifecycle management, an Order Processing Service (Order Service) handling complete order workflows from cart checkout to delivery, a Notification Service managing all user communications via email, SMS, and in-app channels, and a Category Management Service providing hierarchical product categorization with parent-child relationships and admin management.
 
 Core Objectives:
 
@@ -31,6 +31,7 @@ Frontend (Planned) ──► API Gateway (Active, Go)
                                                      ├── Order Service (Active, FastAPI)
                                                      ├── User Profile Service (Active, FastAPI)
                                                      ├── Product Catalog (Active, FastAPI)
+                                                     ├── Category Service (Active, Node.js)
                                                      ├── Cart Service (Active, Node.js)
                                                      ├── Payment Service (Active, FastAPI)
                                                      └── Notification Service (Active, Node.js)
@@ -129,6 +130,32 @@ Out of Scope (Until Explicitly Planned):
 - A/B testing for notification content
 - Rich media notifications (images, attachments)
 
+### Category Service
+
+Purpose: Hierarchical category management system for product organization in the e-commerce platform. Provides complete CRUD operations for categories with parent-child relationships, hierarchy validation, search capabilities, and seamless integration with product catalog and authentication services.
+
+Responsibilities (In-Scope Now):
+
+- Hierarchical category creation and management up to 5 levels deep
+- Admin-only category operations with JWT authentication integration
+- Circular hierarchy prevention and business rule validation
+- Category search and filtering with text matching
+- URL-friendly slug generation and management for categories
+- Product count aggregation and category-product relationship queries
+- Complete category hierarchy traversal and breadcrumb generation
+- Category metadata support with JSON storage for flexible attributes
+- RESTful API with comprehensive Swagger/OpenAPI documentation
+- Database support for SQLite (development) and PostgreSQL (production)
+
+Out of Scope (Until Explicitly Planned):
+
+- Category image upload and file management
+- Category-based product recommendations
+- Category analytics and performance tracking
+- Bulk category import/export functionality
+- Category versioning and audit history
+- Advanced category permissions beyond admin/user roles
+
 ## 4. API Surface
 
 ### API Gateway Service
@@ -147,6 +174,7 @@ Routing Configuration:
 - `/api/auth/*` → Auth Service (no authentication required)
 - `/api/profile/*` → User Profile Service (authentication required)
 - `/api/products/*` → Product Catalog Service (no authentication required)
+- `/api/categories/*` → Category Service (admin authentication required for write operations)
 - `/api/cart/*` → Cart Service (authentication required)
 - `/api/orders/*` → Order Service (authentication required)
 - `/api/payments/*` → Payment Service (authentication required)
@@ -207,6 +235,24 @@ Implemented:
 
 Response & error formats follow Express.js conventions with JSON bodies and standard HTTP status codes (200 / 401 / 422 / 429 / 500). Rate limiting surfaces 429 with retry-after headers. Authentication required for all endpoints except health checks.
 
+### Category Service
+
+Implemented:
+
+- GET `/health` – Basic health check
+- GET `/health/ready` – Readiness check with auth and product service connectivity
+- GET `/categories` – List categories with filtering, hierarchy, and product counts
+- POST `/categories` – Create new category (admin only)
+- GET `/categories/{id}` – Get category details with optional hierarchy information
+- PUT `/categories/{id}` – Update category (admin only)
+- DELETE `/categories/{id}` – Delete category (admin only, validates no active children)
+- GET `/categories/{id}/hierarchy` – Get complete category hierarchy information
+- GET `/categories/{id}/products` – Get products in category with pagination
+- GET `/categories/search` – Search categories by name or description
+- GET `/docs` – Swagger UI documentation interface
+
+Response & error formats follow Express.js conventions with JSON bodies and standard HTTP status codes (200 / 401 / 403 / 404 / 409 / 422 / 429 / 500). All write operations require admin authentication. Category hierarchy validation prevents circular references and enforces 5-level depth limit.
+
 ## 5. Environment Variables
 
 ### API Gateway Service
@@ -260,6 +306,22 @@ Response & error formats follow Express.js conventions with JSON bodies and stan
 | `LOG_LEVEL` | Logging verbosity | `info` | No | debug, info, warn, error |
 | `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
 | `PORT` | Service port | `8011` | No | Exposed internally via gateway |
+
+### Category Service
+
+| Name | Purpose | Typical Value (Dev) | Required | Notes |
+|------|---------|---------------------|----------|-------|
+| `DATABASE_URL` | Sequelize database URL | `sqlite:///category_service.db` | No | Use PostgreSQL in prod (`postgresql://user:pass@host:5432/db`) |
+| `AUTH_SERVICE_URL` | Auth service URL | `http://localhost:8001` | Yes | Used for JWT token verification |
+| `PRODUCT_SERVICE_URL` | Product catalog URL | `http://localhost:8004` | Yes | Used for product count integration |
+| `JWT_SECRET_KEY` | HMAC secret for JWT verification (must match auth service) | Auto-generated | Recommended | Provide strong 256-bit value in prod |
+| `NODE_ENV` | Environment mode | `development` | No | Controls features and logging |
+| `LOG_LEVEL` | Logging verbosity | `info` | No | debug, info, warn, error |
+| `CORS_ORIGIN` | CORS allowed origin | `http://localhost:3000` | No | Frontend application URL |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window | `900000` (15 min) | No | Time window for rate limiting |
+| `RATE_LIMIT_MAX_REQUESTS` | Rate limit threshold | `100` | No | Maximum requests per window |
+| `HOST` | Bind host | `0.0.0.0` | No | Set explicitly in containers |
+| `PORT` | Service port | `8005` | No | Exposed internally via gateway |
 
 If adding new environment variables: (1) update this table, (2) update respective service README, (3) ensure tests reflect new configuration.
 
@@ -402,6 +464,45 @@ npm run lint:fix                       # auto-fix issues
 npm run format                         # format code
 ```
 
+### Category Service
+
+Prerequisites: Node.js 18+, yarn installed, optional Docker.
+
+Quick Start:
+
+```bash
+cd services/category-service
+yarn install                           # install deps
+yarn dev                              # start with nodemon
+# Visit: http://localhost:8005/health
+# Visit: http://localhost:8005/docs
+```
+
+Using SQLite (default) requires no extra setup. For PostgreSQL:
+
+```bash
+export DATABASE_URL=postgresql://categoryuser:pass@localhost:5432/categorydb
+export AUTH_SERVICE_URL=http://localhost:8001
+export PRODUCT_SERVICE_URL=http://localhost:8004
+yarn start
+```
+
+Run Tests:
+
+```bash
+yarn test                             # all tests
+yarn test:contract                    # contract tests
+yarn test:coverage                    # with coverage
+```
+
+Lint & Format:
+
+```bash
+yarn lint                             # check code quality
+yarn lint:fix                         # auto-fix issues
+yarn format                           # format code
+```
+
 ## 7. Docker Packaging & Execution
 
 ### Auth Service
@@ -512,6 +613,42 @@ docker run --rm -p 8011:8011 --network project-zero-net \
 
 Health Check: `curl http://localhost:8011/health`
 
+### Category Service
+
+Build Image:
+
+```bash
+cd services/category-service
+docker build -t category-service:latest .
+```
+
+Run Container (ephemeral SQLite):
+
+```bash
+docker run -p 8005:8005 \
+    -e AUTH_SERVICE_URL="http://host.docker.internal:8001" \
+    -e PRODUCT_SERVICE_URL="http://host.docker.internal:8004" \
+    category-service:latest
+```
+
+Run with PostgreSQL:
+
+```bash
+docker network create project-zero-net || true
+docker run -d --name category-db --network project-zero-net \
+    -e POSTGRES_DB=categorydb -e POSTGRES_USER=categoryuser -e POSTGRES_PASSWORD=categorypass \
+    postgres:15
+
+docker run --rm -p 8005:8005 --network project-zero-net \
+    -e DATABASE_URL=postgresql://categoryuser:categorypass@category-db:5432/categorydb \
+    -e AUTH_SERVICE_URL="http://auth-service:8001" \
+    -e PRODUCT_SERVICE_URL="http://product-service:8004" \
+    -e NODE_ENV="production" \
+    category-service:latest
+```
+
+Health Check: `curl http://localhost:8005/health`
+
 ## 8. Service Dependencies & External Interactions
 
 ### Auth Service
@@ -555,6 +692,21 @@ Outbound Calls:
 - User Profile Service for user contact information (optional with graceful fallback)
 
 The service implements graceful degradation when external services are unavailable, maintaining core notification functionality even when user profile service is down.
+
+### Category Service
+
+External Dependencies:
+- Database: SQLite (dev) / PostgreSQL (planned prod)
+- Auth Service: JWT token verification via `GET /auth/verify`
+- Product Service: Product count aggregation and category-product relationship queries (optional graceful degradation)
+
+Incoming Callers: Frontend via API Gateway will call category management endpoints. Product Service and Order Service may call category endpoints for product organization and order categorization.
+
+Outbound Calls:
+- Auth Service for JWT token validation (required for admin operations)
+- Product Service for product count aggregation and category-product relationships (optional with graceful fallback)
+
+The service implements graceful degradation when product service is unavailable, providing mock product counts and cached data to maintain core category functionality.
 
 ## 9. AI Assistant (Claude) Contribution Protocol
 
@@ -668,6 +820,25 @@ curl -s http://localhost:8011/health | jq '.'
 
 # Test notification API
 curl -s http://localhost:8011/docs
+
+# Category service dev
+cd services/category-service && yarn install && yarn dev
+
+# Tests & coverage
+yarn test && yarn test:coverage
+
+# Lint & format
+yarn lint && yarn format
+
+# Docker build & run category service
+docker build -t category-service:latest services/category-service
+docker run -p 8005:8005 -e AUTH_SERVICE_URL=http://host.docker.internal:8001 -e PRODUCT_SERVICE_URL=http://host.docker.internal:8004 category-service:latest
+
+# Category service health probe
+curl -s http://localhost:8005/health | jq '.'
+
+# Test category API
+curl -s http://localhost:8005/docs
 ```
 
 ## 14. Changelog (High-Level)
@@ -677,6 +848,7 @@ curl -s http://localhost:8011/docs
 | 2025-09-23 | Initial condensed CLAUDE.md authored; established AI protocol |
 | 2025-09-25 | Order Processing Service implemented with complete order lifecycle management, tax/shipping calculation, status tracking, and microservice integrations |
 | 2025-09-28 | Notification Service implemented with multi-channel communications (email, SMS, in-app), template management, user preferences, scheduled delivery, and comprehensive API documentation |
+| 2025-09-29 | Category Service implemented with hierarchical category management, admin-only operations, circular hierarchy prevention, product integration, and comprehensive validation |
 
 ---
 Maintain this file as a compact operational contract. If it becomes bloated, refactor detail into service-specific READMEs or specs and relink.
