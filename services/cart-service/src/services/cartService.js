@@ -10,8 +10,11 @@ class CartService {
   }
 
   async findOrCreateCart(userId) {
+    // Ensure userId is a string for database compatibility
+    const userIdString = String(userId);
+
     let cart = await Cart.findOne({
-      where: { user_id: userId },
+      where: { user_id: userIdString },
       include: [
         {
           model: CartItem,
@@ -22,7 +25,7 @@ class CartService {
 
     if (!cart) {
       cart = await Cart.create({
-        user_id: userId,
+        user_id: userIdString,
       });
       cart.items = [];
     }
@@ -37,8 +40,11 @@ class CartService {
       );
     }
 
+    // Convert productId to string for database compatibility
+    const productIdString = String(productId);
+
     // Validate product exists and is available
-    const product = await productService.getProduct(productId);
+    const product = await productService.getProduct(productIdString);
     if (!product) {
       throw new Error('Product not found');
     }
@@ -53,7 +59,7 @@ class CartService {
     let cartItem = await CartItem.findOne({
       where: {
         cart_id: cart.id,
-        product_id: productId,
+        product_id: productIdString,
       },
     });
 
@@ -83,7 +89,7 @@ class CartService {
       // Create new cart item
       cartItem = await CartItem.create({
         cart_id: cart.id,
-        product_id: productId,
+        product_id: productIdString,
         quantity,
       });
     }
@@ -96,8 +102,11 @@ class CartService {
   }
 
   async getCartWithItems(userId) {
+    // Ensure userId is a string for database compatibility
+    const userIdString = String(userId);
+
     const cart = await Cart.findOne({
-      where: { user_id: userId },
+      where: { user_id: userIdString },
       include: [
         {
           model: CartItem,

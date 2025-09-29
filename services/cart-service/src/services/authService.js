@@ -17,8 +17,7 @@ class AuthService {
       
       const response = await axios.get(`${this.authServiceUrl}/auth/verify`, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          Host: 'localhost:8001'  // Override host header to bypass uvicorn validation
+          Authorization: `Bearer ${token}`
         },
         timeout: this.timeout,
       });
@@ -57,7 +56,7 @@ class AuthService {
         timeout: this.timeout,
       });
       return response.status === 200;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

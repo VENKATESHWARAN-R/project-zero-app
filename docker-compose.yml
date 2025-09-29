@@ -152,9 +152,9 @@ services:
       - "8007:8007"
     environment:
       PORT: 8007
-      NODE_ENV: production
+      NODE_ENV: development
       DATABASE_URL: postgresql://projectzero:projectzero@postgres:5432/project_zero
-      AUTH_SERVICE_URL: http://host.docker.internal:8001
+      AUTH_SERVICE_URL: http://auth-service:8001
       PRODUCT_SERVICE_URL: http://product-service:8004
       JWT_SECRET: dev-secret-key-change-in-prod
       LOG_LEVEL: info

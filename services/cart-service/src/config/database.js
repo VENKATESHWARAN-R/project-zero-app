@@ -36,14 +36,8 @@ const getDatabaseConfig = () => {
     ...baseConfig,
     dialect: 'postgres',
     dialectOptions: {
-      // SSL configuration for production
-      ssl:
-        config.nodeEnv === 'production'
-          ? {
-              require: true,
-              rejectUnauthorized: false,
-            }
-          : false,
+      // Disable SSL for development/test databases
+      ssl: false,
     },
   };
 };
